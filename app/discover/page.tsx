@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, MapPin, Heart, ChevronLeft,
     ChevronRight, BadgeCheck, LayoutGrid,
-    List, Briefcase, Filter, X, ChevronDown
+    List, Briefcase, Filter, X, ChevronDown, Sun
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -160,6 +160,11 @@ export default function DiscoverPage() {
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80" />
 
+                                                <div className="absolute top-4 left-4">
+                                                    <div className="px-3 py-1 bg-rose-600/90 backdrop-blur-md text-white rounded-lg text-[10px] uppercase font-black tracking-widest flex items-center gap-2 shadow-lg ring-1 ring-white/20">
+                                                        <Sun size={12} className="animate-spin-slow" /> Synergy Match
+                                                    </div>
+                                                </div>
                                                 <div className="absolute top-4 right-4">
                                                     <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-rose-500 hover:text-white text-white transition-all border border-white/30">
                                                         <Heart size={18} strokeWidth={1.5} />

@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Send, Paperclip, ChevronLeft, Loader2, MoreHorizontal } from "lucide-react";
+import { Heart, Send, Paperclip, ChevronLeft, Loader2, MoreHorizontal, Check, Sun } from "lucide-react";
 import Pusher from "pusher-js";
 
 interface Message {
@@ -121,49 +121,84 @@ export default function ChatPage() {
     );
 
     return (
-        <div className="max-w-4xl mx-auto h-[calc(100vh-80px)] flex flex-col pt-4">
-            {/* Header */}
-            <header className="px-8 py-6 flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                    <button
-                        onClick={() => router.back()}
-                        className="p-3 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
-                    >
-                        <ChevronLeft className="w-5 h-5 text-gray-900" />
-                    </button>
-                    <div>
-                        <h2 className="text-xl font-bold tracking-tight text-gray-900">{recipientName}</h2>
-                        <div className="flex items-center gap-1.5 pt-0.5">
-                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                            <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500">Available Now</span>
+        <div className="bg-[#fcf8f7] min-h-screen flex flex-col">
+            {/* Header - Fixed and Glassmorphic */}
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white/60 backdrop-blur-2xl border-b border-rose-100/50 px-6 py-4">
+                <div className="max-w-4xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => router.back()}
+                            className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-rose-600 hover:border-rose-100 transition-all shadow-sm"
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-white shadow-md">
+                                    <img
+                                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120"
+                                        className="w-full h-full object-cover"
+                                        alt="Recipient"
+                                    />
+                                </div>
+                                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full ring-4 ring-emerald-500/10" />
+                            </div>
+                            <div className="space-y-0.5">
+                                <h2 className="text-lg font-serif text-slate-900 tracking-tight leading-none">{recipientName}</h2>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-1.5">
+                                    Active Presence
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <button className="p-3 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors">
-                    <MoreHorizontal className="w-5 h-5 text-gray-400" />
-                </button>
+                    <div className="flex items-center gap-3">
+                        <button className="p-3 text-slate-400 hover:text-rose-600 transition-colors">
+                            <Heart size={20} className="fill-transparent hover:fill-rose-500" />
+                        </button>
+                        <button className="p-3 text-slate-400 hover:text-slate-900 transition-colors">
+                            <MoreHorizontal size={20} />
+                        </button>
+                    </div>
+                </div>
             </header>
 
             {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto px-8 py-10 space-y-6">
+            <div className="flex-1 max-w-4xl w-full mx-auto px-6 pt-32 pb-32 space-y-8 overflow-y-auto scrollbar-hide">
                 <AnimatePresence initial={false}>
+                    {messages.length === 0 && !loading && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-center py-20 space-y-6"
+                        >
+                            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto">
+                                <Heart size={24} className="text-rose-500 fill-rose-500/10" />
+                            </div>
+                            <p className="text-slate-400 font-serif italic text-lg">Send a message to ignite the spark...</p>
+                        </motion.div>
+                    )}
                     {messages.map((msg, idx) => {
                         const isMe = msg.senderId === session?.user?.id;
                         return (
                             <motion.div
                                 key={msg.id}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
+                                initial={{ opacity: 0, scale: 0.95, y: 10, x: isMe ? 10 : -10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                                 className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                             >
-                                <div className={`max-w-[75%] px-6 py-4 rounded-[1.5rem] ${isMe
-                                    ? 'bg-gray-900 text-white rounded-tr-none'
-                                    : 'bg-gray-50 text-gray-900 rounded-tl-none border border-gray-100'
-                                    }`}>
-                                    <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
-                                    <div className={`text-[9px] uppercase font-black tracking-widest mt-2 ${isMe ? 'text-gray-400' : 'text-gray-300'}`}>
-                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                <div className={`group relative max-w-[80%] md:max-w-[65%] space-y-2`}>
+                                    <div className={`px-6 py-4 rounded-[2.5rem] shadow-sm transition-all duration-300 ${isMe
+                                        ? 'bg-slate-900 text-white rounded-tr-none shadow-slate-900/10'
+                                        : 'bg-white text-slate-900 border border-rose-100 rounded-tl-none shadow-rose-900/5'
+                                        }`}>
+                                        <p className="text-sm font-medium leading-relaxed tracking-tight">{msg.content}</p>
+                                    </div>
+                                    <div className={`flex items-center gap-3 px-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                        <span className="text-[9px] uppercase font-black tracking-widest text-slate-300">
+                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                        {isMe && <Check size={10} className="text-rose-500" />}
                                     </div>
                                 </div>
                             </motion.div>
@@ -173,30 +208,32 @@ export default function ChatPage() {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
-            <footer className="p-8">
-                <form
-                    onSubmit={handleSend}
-                    className="flex items-center gap-4 bg-gray-50 p-3 rounded-[2rem] border border-gray-100 focus-within:bg-white focus-within:border-gray-200 focus-within:shadow-sm transition-all"
-                >
-                    <button type="button" className="p-3 text-gray-300 hover:text-gray-900 transition-colors">
-                        <Paperclip className="w-5 h-5" />
-                    </button>
-                    <input
-                        type="text"
-                        placeholder="Expression..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        className="flex-1 bg-transparent px-2 outline-none text-sm font-medium text-gray-900 placeholder:text-gray-300"
-                    />
-                    <button
-                        type="submit"
-                        disabled={!newMessage.trim()}
-                        className="p-3 bg-gray-900 text-white rounded-full hover:bg-black transition-all disabled:opacity-20 disabled:grayscale"
+            {/* Input Bar - Floating */}
+            <footer className="fixed bottom-8 left-6 right-6 z-50">
+                <div className="max-w-4xl mx-auto">
+                    <form
+                        onSubmit={handleSend}
+                        className="flex items-center gap-3 bg-white/80 backdrop-blur-xl p-3 pl-5 rounded-[2.5rem] border border-rose-100 shadow-2xl shadow-rose-900/5 focus-within:border-rose-300 focus-within:ring-4 focus-within:ring-rose-500/5 transition-all"
                     >
-                        <Send className="w-5 h-5" />
-                    </button>
-                </form>
+                        <button type="button" className="p-3 text-slate-300 hover:text-rose-500 transition-colors">
+                            <Paperclip size={20} />
+                        </button>
+                        <input
+                            type="text"
+                            placeholder="Type your heart's expression..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            className="flex-1 bg-transparent px-2 outline-none text-sm font-medium text-slate-900 placeholder:text-slate-300"
+                        />
+                        <button
+                            type="submit"
+                            disabled={!newMessage.trim()}
+                            className="p-4 bg-slate-900 text-white rounded-full hover:bg-rose-600 transition-all disabled:opacity-20 flex items-center justify-center shadow-lg shadow-slate-900/10"
+                        >
+                            <Send size={18} />
+                        </button>
+                    </form>
+                </div>
             </footer>
         </div>
     );

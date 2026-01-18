@@ -4,7 +4,7 @@ import { Profile, JobStatus, MaritalStatus } from '../entities/Profile';
 
 interface CreateProfileInput {
     userId: string;
-    age: number;
+    dateOfBirth: string | Date;
     gender: string;
     bio: string;
     location: string;
@@ -27,7 +27,6 @@ export class CreateProfileUseCase {
         const profile = Profile.create({
             id: crypto.randomUUID(),
             userId: input.userId,
-            age: input.age,
             gender: input.gender,
             bio: input.bio,
             location: input.location,
@@ -36,6 +35,7 @@ export class CreateProfileUseCase {
             photoUrl: input.photoUrl,
             coverUrl: input.coverUrl,
             photoGallery: input.photoGallery,
+            dateOfBirth: new Date(input.dateOfBirth),
             jobCategory: input.jobCategory,
             contactDetails: input.contactDetails,
             createdAt: new Date(),

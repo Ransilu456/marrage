@@ -6,7 +6,9 @@ import { CreateProfileUseCase } from '@/src/core/use-cases/CreateProfile';
 import { ProfileRepositoryPrisma } from '@/src/infrastructure/db/ProfileRepositoryPrisma';
 
 const profileSchema = z.object({
-    age: z.coerce.number().min(18, "Must be at least 18"),
+    dateOfBirth: z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: "Invalid date format",
+    }),
     gender: z.string().min(1, "Gender is required"),
     bio: z.string().min(1, "Bio is required"),
     location: z.string().min(1, "Location is required"),

@@ -17,6 +17,7 @@ import {
 interface ProfileData {
     id: string;
     age: number;
+    dateOfBirth: string;
     gender: string;
     bio: string;
     location: string;
@@ -48,7 +49,7 @@ export default function ProfilePage() {
     const [generalError, setGeneralError] = useState('');
 
     const [formData, setFormData] = useState({
-        age: 25,
+        dateOfBirth: '2000-01-01',
         gender: 'MALE',
         bio: '',
         location: '',
@@ -101,7 +102,7 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
         try {
             const response = await fetch('/api/profile');
-            
+
             if (response.status === 401) {
                 router.push('/auth/login');
                 return;
@@ -112,7 +113,7 @@ export default function ProfilePage() {
                 setProfile(data.profile);
                 // Ensure no null values in formData
                 setFormData({
-                    age: data.profile.age ?? 25,
+                    dateOfBirth: data.profile.dateOfBirth ? new Date(data.profile.dateOfBirth).toISOString().split('T')[0] : '2000-01-01',
                     gender: data.profile.gender ?? 'MALE',
                     bio: data.profile.bio ?? '',
                     location: data.profile.location ?? '',
@@ -244,15 +245,23 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-slate-400 ml-1">Age</label>
-                        <input
-                            type="number"
-                            name="age"
-                            value={formData.age}
-                            onChange={e => setFormData({ ...formData, age: parseInt(e.target.value) })}
-                            className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 block p-3.5 outline-none transition-all"
-                        />
-                        {errors.age && <p className="text-[10px] font-bold text-rose-500 uppercase mt-1">{errors.age[0]}</p>}
+                        <label className="text-[10px] uppercase tracking-widest font-bold text-slate-400 ml-1">Date of Birth</label>
+                        <div className="flex gap-4">
+                            <input
+                                type="date"
+                                name="dateOfBirth"
+                                value={formData.dateOfBirth}
+                                onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                                className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 block p-3.5 outline-none transition-all"
+                            />
+                            <div className="w-16 bg-white border border-slate-200 rounded-xl flex flex-col items-center justify-center p-1 shadow-sm">
+                                <span className="text-[10px] uppercase font-black text-slate-400 leading-none">Age</span>
+                                <span className="text-lg font-serif text-rose-600 leading-tight">
+                                    {formData.dateOfBirth ? Math.floor((new Date().getTime() - new Date(formData.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25)) : '--'}
+                                </span>
+                            </div>
+                        </div>
+                        {errors.dateOfBirth && <p className="text-[10px] font-bold text-rose-500 uppercase mt-1">{errors.dateOfBirth[0]}</p>}
                     </div>
 
                     <div className="space-y-2">

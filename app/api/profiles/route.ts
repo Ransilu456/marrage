@@ -16,12 +16,15 @@ export async function GET(req: NextRequest) {
 
     try {
         const repo = new ProfileRepositoryPrisma();
+        const currentUserProfile = await repo.findByUserId(token.sub);
+
         const useCase = new SearchProfilesUseCase(repo);
 
         const profiles = await useCase.execute({
             excludeUserId: token.sub,
             jobStatus,
             maritalStatus,
+            currentUserJobCategory: currentUserProfile?.jobCategory
         });
 
         // Map to DTO to hide sensitive info if needed

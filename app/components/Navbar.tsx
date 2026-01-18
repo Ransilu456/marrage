@@ -14,11 +14,11 @@ export default function Navbar() {
 
     const toggleMenu = () => setIsOpen(!isOpen);
 
-    const navItems = [
+    const navItems = session ? [
         { name: 'Discover', href: '/discover' },
         { name: 'Proposals', href: '/proposals' },
         { name: 'Messages', href: '/messages' },
-    ];
+    ] : [];
 
     return (
         <nav className="fixed w-full z-[100] top-0 left-0 bg-white/80 backdrop-blur-md border-b border-rose-100/50 transition-all duration-500">

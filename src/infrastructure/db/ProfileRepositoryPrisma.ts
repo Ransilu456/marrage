@@ -16,6 +16,7 @@ export class ProfileRepositoryPrisma implements IProfileRepository {
             photoUrl: profile.photoUrl,
             coverUrl: profile.coverUrl || null,
             photoGallery: profile.photoGallery || null,
+            dateOfBirth: profile.dateOfBirth,
             jobCategory: profile.jobCategory,
             contactDetails: profile.contactDetails,
             updatedAt: new Date()
@@ -48,7 +49,6 @@ export class ProfileRepositoryPrisma implements IProfileRepository {
         return Profile.create({
             id: p.id,
             userId: p.userId,
-            age: p.age,
             gender: p.gender,
             bio: p.bio,
             location: p.location,
@@ -57,6 +57,7 @@ export class ProfileRepositoryPrisma implements IProfileRepository {
             photoUrl: p.photoUrl,
             coverUrl: p.coverUrl || undefined,
             photoGallery: p.photoGallery || undefined,
+            dateOfBirth: p.dateOfBirth || new Date(new Date().setFullYear(new Date().getFullYear() - p.age)), // Fallback: estimate from age if missing
             jobCategory: p.jobCategory,
             contactDetails: p.contactDetails,
             createdAt: p.createdAt,

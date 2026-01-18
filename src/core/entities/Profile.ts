@@ -17,7 +17,6 @@ export enum MaritalStatus {
 export interface ProfileProps {
     id: string;
     userId: string;
-    age: number;
     gender: string;
     bio: string;
     location: string;
@@ -26,6 +25,7 @@ export interface ProfileProps {
     photoUrl: string;
     coverUrl?: string;
     photoGallery?: string; // Comma-separated or serialized
+    dateOfBirth: Date;
     jobCategory: string;
     contactDetails: string;
     createdAt: Date;
@@ -38,7 +38,8 @@ export class Profile {
     }
 
     private validate(): void {
-        if (this.props.age < 18) {
+        const calculatedAge = Profile.calculateAge(this.props.dateOfBirth);
+        if (calculatedAge < 18) {
             throw new Error("User must be at least 18 years old");
         }
         if (!this.props.bio) throw new Error("Bio is required");
@@ -55,7 +56,10 @@ export class Profile {
     // Getters
     get id(): string { return this.props.id; }
     get userId(): string { return this.props.userId; }
-    get age(): number { return this.props.age; }
+    get dateOfBirth(): Date { return this.props.dateOfBirth; }
+    get age(): number {
+        return Profile.calculateAge(this.props.dateOfBirth);
+    }
     get gender(): string { return this.props.gender; }
     get jobStatus(): JobStatus { return this.props.jobStatus; }
     get maritalStatus(): MaritalStatus { return this.props.maritalStatus; }
@@ -75,7 +79,21 @@ export class Profile {
 
     toJSON() {
         return {
-            ...this.props
+            ...this.props,
+            age: this.age
         };
+    }
+
+    static calculateAge(dob: Date): number {
+        const today = new Date();
+        const birthDate = new Date(dob);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        return age;
     }
 }
