@@ -15,73 +15,92 @@ enum Role {
 
 // User model for authentication and core data
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  password      String // Hashed password
-  name          String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String // Hashed password
+  name      String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  profile       Profile?
-  sentProposals Proposal[] @relation("SentProposals")
+  profile           Profile?
+  sentProposals     Proposal[] @relation("SentProposals")
   receivedProposals Proposal[] @relation("ReceivedProposals")
-  
+
   // Matching and Social
   sentMatches     Match[] @relation("Sender")
   receivedMatches Match[] @relation("Receiver")
-  
+
   // Chat
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
 
+  // Favorites
+  favorites   Favorite[] @relation("UserFavorites")
+  favoritedBy Favorite[] @relation("UserFavoritedBy")
+
   @@map("users")
+}
+
+// Favorite connection
+model Favorite {
+  id          String @id @default(uuid())
+  userId      String // The user who favorited
+  favoritedId String // The user who was favorited
+
+  user      User @relation("UserFavorites", fields: [userId], references: [id])
+  favorited User @relation("UserFavoritedBy", fields: [favoritedId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, favoritedId])
+  @@map("favorites")
 }
 
 // Detailed User Profile for Discovery
 model Profile {
-  id            String    @id @default(uuid())
-  userId        String    @unique
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Vital Stats
-  dateOfBirth   DateTime?
-  age           Int
-  gender        String
-  bio           String
-  location      String
-  
+  dateOfBirth DateTime?
+  age         Int
+  gender      String
+  bio         String
+  location    String
+
   // Filters defined by user
-  jobStatus     String    // e.g., "EMPLOYED", "UNEMPLOYED", "STUDENT"
-  maritalStatus String    // e.g., "SINGLE", "WIDOWED", "DIVORCED"
-  
-  jobCategory   String   // New field for specific job category
-  contactDetails String  // New field for user contact info
-  
+  jobStatus     String // e.g., "EMPLOYED", "UNEMPLOYED", "STUDENT"
+  maritalStatus String // e.g., "SINGLE", "WIDOWED", "DIVORCED"
+
+  jobCategory    String // New field for specific job category
+  contactDetails String // New field for user contact info
+
   // Media
-  photoUrl      String
-  coverUrl      String?   // New field for cover photo
-  photoGallery  String?   // New field for multiple photos (comma-separated)
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  photoUrl     String
+  coverUrl     String? // New field for cover photo
+  photoGallery String? // New field for multiple photos (comma-separated)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("profiles")
 }
 
 // Match connection between two users
 model Match {
-  id            String    @id @default(uuid())
-  senderId      String
-  receiverId    String
-  status        String    @default("PENDING") // PENDING, ACCEPTED, REJECTED
-  
-  sender        User      @relation("Sender", fields: [senderId], references: [id])
-  receiver      User      @relation("Receiver", fields: [receiverId], references: [id])
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id         String @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     String @default("PENDING") // PENDING, ACCEPTED, REJECTED
+
+  sender   User @relation("Sender", fields: [senderId], references: [id])
+  receiver User @relation("Receiver", fields: [receiverId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([senderId, receiverId])
   @@map("matches")
@@ -89,36 +108,36 @@ model Match {
 
 // Real-time Chat Messages
 model Message {
-  id            String    @id @default(uuid())
-  content       String
-  senderId      String
-  receiverId    String
-  
-  sender        User      @relation("SentMessages", fields: [senderId], references: [id])
-  receiver      User      @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  
-  read          Boolean   @default(false)
-  createdAt     DateTime  @default(now())
+  id         String @id @default(uuid())
+  content    String
+  senderId   String
+  receiverId String
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   @@map("messages")
 }
 
 // Updated Proposal Model
 model Proposal {
-  id            String    @id @default(uuid())
-  
+  id String @id @default(uuid())
+
   // Link to registered users
-  proposerId    String
-  recipientId   String
-  
-  proposer      User      @relation("SentProposals", fields: [proposerId], references: [id])
-  recipient     User      @relation("ReceivedProposals", fields: [recipientId], references: [id])
-  
-  answer        String    @default("PENDING") // YES, NO, PENDING
-  message       String?
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  proposerId  String
+  recipientId String
+
+  proposer  User @relation("SentProposals", fields: [proposerId], references: [id])
+  recipient User @relation("ReceivedProposals", fields: [recipientId], references: [id])
+
+  answer  String  @default("PENDING") // YES, NO, PENDING
+  message String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("proposals")
 }

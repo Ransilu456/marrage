@@ -11,9 +11,12 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { UserCard } from '@/app/components/discover/UserCard';
+
 interface Profile {
     id: string;
     userId: string;
+    name: string;
     age: number;
     gender: string;
     bio: string;
@@ -35,11 +38,59 @@ export default function DiscoverPage() {
     }, [status, router]);
 
     const [profiles, setProfiles] = useState<Profile[]>([]);
+    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({
         jobStatus: '',
         maritalStatus: '',
     });
+
+    const jobStatusOptions = [
+        { label: 'All Careers', value: '' },
+        { label: 'Employed', value: 'EMPLOYED' },
+        { label: 'Self-Employed', value: 'SELF_EMPLOYED' },
+        { label: 'Student', value: 'STUDENT' },
+        { label: 'Retired', value: 'RETIRED' },
+    ];
+
+    const maritalStatusOptions = [
+        { label: 'All Stories', value: '' },
+        { label: 'Single', value: 'SINGLE' },
+        { label: 'Divorced', value: 'DIVORCED' },
+        { label: 'Widowed', value: 'WIDOWED' },
+    ];
+
+    const fetchFavorites = async () => {
+        try {
+            const response = await fetch('/api/favorites');
+            if (response.ok) {
+                const data = await response.json();
+                setFavoriteIds(data.favoriteIds || []);
+            }
+        } catch (error) {
+            console.error('Error fetching favorites:', error);
+        }
+    };
+
+    const toggleFavorite = async (favoritedId: string) => {
+        try {
+            const response = await fetch('/api/favorites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ favoritedId }),
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.isFavorited) {
+                    setFavoriteIds(prev => [...prev, favoritedId]);
+                } else {
+                    setFavoriteIds(prev => prev.filter(id => id !== favoritedId));
+                }
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+        }
+    };
 
     const fetchProfiles = async () => {
         setLoading(true);
@@ -67,160 +118,167 @@ export default function DiscoverPage() {
     useEffect(() => {
         if (status === 'authenticated') {
             fetchProfiles();
+            fetchFavorites();
         }
     }, [filters, status]);
 
     return (
-        <div className="bg-slate-50 min-h-screen pt-12">
-            <main className="max-w-7xl mx-auto px-6 pb-20">
-                <div className="flex items-end justify-between mb-12">
-                    <div>
-                        <h2 className="text-4xl font-serif text-slate-900 tracking-tight">Discover Matches</h2>
-                        <p className="text-slate-500 text-sm mt-3">Curated recommendations based on your unique essence</p>
-                    </div>
+        <div className="bg-slate-50 min-h-screen pb-32 overflow-hidden relative">
+            {/* Premium Aurora Background */}
+            <div className="aurora-bg">
+                <div className="aurora-blob bg-rose-200 w-[600px] h-[600px] -top-[20%] -left-[10%]" />
+                <div className="aurora-blob bg-orange-100 w-[500px] h-[500px] top-[10%] -right-[5%] [animation-delay:-5s]" />
+                <div className="aurora-blob bg-rose-50 w-[400px] h-[400px] bottom-[10%] left-[20%] [animation-delay:-10s]" />
+                <div className="absolute inset-0 grid-pattern opacity-40" />
+            </div>
 
-                    <div className="flex bg-white border border-slate-200 rounded-lg p-1 gap-1 shadow-sm">
-                        <button className="p-2 rounded-md bg-slate-100 text-slate-900 shadow-sm">
-                            <LayoutGrid size={16} strokeWidth={1.5} />
-                        </button>
-                        <button className="p-2 rounded-md hover:bg-slate-50 text-slate-400 hover:text-slate-600">
-                            <List size={16} strokeWidth={1.5} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-12">
-                    {/* Sidebar Filters */}
-                    <aside className="lg:col-span-1 space-y-10">
-                        <div className="space-y-4">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Employment</h3>
-                            <div className="relative">
-                                <select
-                                    value={filters.jobStatus}
-                                    onChange={(e) => setFilters({ ...filters, jobStatus: e.target.value })}
-                                    className="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-sm rounded-xl p-3 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/10"
-                                >
-                                    <option value="">Any Status</option>
-                                    <option value="EMPLOYED">Employed</option>
-                                    <option value="SELF_EMPLOYED">Self Employed</option>
-                                    <option value="STUDENT">Student</option>
-                                    <option value="RETIRED">Retired</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={14} />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Marital Identity</h3>
-                            <div className="relative">
-                                <select
-                                    value={filters.maritalStatus}
-                                    onChange={(e) => setFilters({ ...filters, maritalStatus: e.target.value })}
-                                    className="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-sm rounded-xl p-3 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/10"
-                                >
-                                    <option value="">Any History</option>
-                                    <option value="SINGLE">Never Married</option>
-                                    <option value="DIVORCED">Divorced</option>
-                                    <option value="WIDOWED">Widowed</option>
-                                </select>
-                                <ChevronDown className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={14} />
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => setFilters({ jobStatus: '', maritalStatus: '' })}
-                            className="w-full py-2.5 bg-slate-100 hover:bg-white border border-slate-100 hover:border-rose-200 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-rose-600 transition-all rounded-xl"
+            <main className="relative max-w-7xl mx-auto px-6 pt-32 space-y-16">
+                {/* Advanced Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                    <div className="space-y-6 max-w-2xl">
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-4 text-rose-600 font-black text-[11px] uppercase tracking-[0.4em]"
                         >
-                            Reset Essence
-                        </button>
-                    </aside>
-
-                    {/* Profiles Grid */}
-                    <div className="lg:col-span-3">
-                        {loading ? (
-                            <div className="flex justify-center py-20">
-                                <div className="w-12 h-12 border-4 border-rose-100 border-t-rose-600 rounded-full animate-spin" />
-                            </div>
-                        ) : profiles.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                                <AnimatePresence>
-                                    {profiles.map((profile, index) => (
-                                        <motion.div
-                                            key={profile.id}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
-                                            className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500 overflow-hidden flex flex-col"
-                                        >
-                                            <div className="relative aspect-[4/5] overflow-hidden">
-                                                <img
-                                                    src={profile.photoUrl || "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80"}
-                                                    alt={profile.bio}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80" />
-
-                                                <div className="absolute top-4 left-4">
-                                                    <div className="px-3 py-1 bg-rose-600/90 backdrop-blur-md text-white rounded-lg text-[10px] uppercase font-black tracking-widest flex items-center gap-2 shadow-lg ring-1 ring-white/20">
-                                                        <Sun size={12} className="animate-spin-slow" /> Synergy Match
-                                                    </div>
-                                                </div>
-                                                <div className="absolute top-4 right-4">
-                                                    <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-rose-500 hover:text-white text-white transition-all border border-white/30">
-                                                        <Heart size={18} strokeWidth={1.5} />
-                                                    </button>
-                                                </div>
-
-                                                <div className="absolute bottom-6 left-6 right-6 text-white text-center">
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        <h3 className="font-serif text-2xl tracking-tight">{profile.gender === 'FEMALE' ? 'Sophia' : 'Liam'}, {profile.age}</h3>
-                                                        <BadgeCheck className="text-rose-400" size={18} />
-                                                    </div>
-                                                    <p className="text-[10px] text-white/70 uppercase tracking-[0.3em] font-black mt-2 flex items-center justify-center gap-1">
-                                                        <MapPin size={10} /> {profile.location}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="p-6 flex flex-col gap-4 text-center">
-                                                <div className="flex justify-center flex-wrap gap-2">
-                                                    <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-full text-[10px] text-slate-500 uppercase tracking-widest font-black">
-                                                        {profile.jobCategory}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">
-                                                    "{profile.bio}"
-                                                </p>
-                                                <Link
-                                                    href={`/chat/${profile.userId}`}
-                                                    className="mt-2 w-full py-3 rounded-2xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-900/5"
-                                                >
-                                                    Connect Heart
-                                                </Link>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                            </div>
-                        ) : (
-                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                                <p className="text-slate-400 font-serif text-lg">No souls found matching this essence...</p>
-                            </div>
-                        )}
-
-                        {profiles.length > 0 && (
-                            <div className="mt-16 flex items-center justify-center gap-3">
-                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-400 hover:border-rose-200 hover:text-rose-600 transition-all bg-white">
-                                    <ChevronLeft size={20} />
-                                </button>
-                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center bg-rose-600 text-white shadow-lg shadow-rose-500/20 text-sm font-black tracking-widest">1</button>
-                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-400 hover:border-rose-200 hover:text-rose-600 transition-all bg-white text-sm font-black tracking-widest">2</button>
-                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-400 hover:border-rose-200 hover:text-rose-600 transition-all bg-white">
-                                    <ChevronRight size={20} />
-                                </button>
-                            </div>
-                        )}
+                            <span className="w-10 h-[2px] bg-rose-500 rounded-full" />
+                            Aura Resonance
+                        </motion.div>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
+                            className="text-6xl md:text-8xl font-serif text-slate-900 tracking-tight leading-[0.9]"
+                        >
+                            Discover Your <br />
+                            <span className="italic text-rose-500 relative">
+                                Soul's
+                                <motion.div
+                                    className="absolute -bottom-2 left-0 h-1 bg-rose-200/50 rounded-full"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: '100%' }}
+                                    transition={{ delay: 0.8, duration: 1 }}
+                                />
+                            </span> Match
+                        </motion.h1>
                     </div>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="hidden lg:block bg-white/40 backdrop-blur-md border border-white/50 p-6 rounded-[2.5rem] shadow-xl shadow-slate-900/5"
+                    >
+                        <div className="flex items-center gap-6">
+                            <div className="h-12 w-12 rounded-full bg-rose-600 flex items-center justify-center text-white shadow-lg shadow-rose-500/20">
+                                <Search size={20} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Aura Matches</p>
+                                <p className="text-2xl font-serif text-slate-900">{profiles.length}</p>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
+
+                {/* Refined Custom Filters */}
+                <div className="sticky top-8 z-50">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white/70 backdrop-blur-2xl border border-white/60 rounded-[2.5rem] p-3 shadow-2xl shadow-slate-900/10 flex flex-col md:flex-row items-center gap-3 overflow-hidden"
+                    >
+                        <div className="flex flex-wrap items-center justify-center gap-2 p-1">
+                            {jobStatusOptions.map((opt) => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => setFilters({ ...filters, jobStatus: opt.value })}
+                                    className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all ${filters.jobStatus === opt.value
+                                            ? 'bg-slate-900 text-white shadow-lg'
+                                            : 'text-slate-500 hover:bg-white/80 hover:text-slate-900'
+                                        }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="hidden md:block w-px h-8 bg-slate-200/50" />
+                        <div className="flex flex-wrap items-center justify-center gap-2 p-1">
+                            {maritalStatusOptions.map((opt) => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => setFilters({ ...filters, maritalStatus: opt.value })}
+                                    className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-wider transition-all ${filters.maritalStatus === opt.value
+                                            ? 'bg-rose-600 text-white shadow-lg'
+                                            : 'text-slate-500 hover:bg-white/80 hover:text-rose-600'
+                                        }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {(filters.jobStatus || filters.maritalStatus) && (
+                            <button
+                                onClick={() => setFilters({ jobStatus: '', maritalStatus: '' })}
+                                className="p-3 text-slate-400 hover:text-rose-600 transition-colors ml-auto"
+                            >
+                                <X size={20} />
+                            </button>
+                        )}
+                    </motion.div>
+                </div>
+
+                {/* Match Grid - Ultra Responsive */}
+                <div className="min-h-[600px]">
+                    {loading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
+                            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                                <div key={i} className="space-y-6">
+                                    <div className="aspect-[4/5] rounded-[2.5rem] bg-slate-200/50 animate-pulse" />
+                                    <div className="h-6 w-1/2 bg-slate-200/50 rounded-full animate-pulse" />
+                                    <div className="h-4 w-3/4 bg-slate-200/50 rounded-full animate-pulse" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : profiles.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-20 md:gap-y-24">
+                            <AnimatePresence mode="popLayout">
+                                {profiles.map((profile, index) => (
+                                    <UserCard
+                                        key={profile.id}
+                                        profile={profile}
+                                        index={index}
+                                        isFavorite={favoriteIds.includes(profile.userId)}
+                                        onToggleFavorite={toggleFavorite}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </div>
+                    ) : (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center py-40 space-y-4"
+                        >
+                            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-300">
+                                <Search size={32} />
+                            </div>
+                            <h3 className="text-3xl font-serif text-slate-400">Searching for your aura...</h3>
+                            <p className="text-sm text-slate-300">Try adjusting your resonance filters to find more matches.</p>
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* Elite Pagination */}
+                {profiles.length > 0 && (
+                    <div className="flex items-center justify-center pt-20">
+                        <div className="group flex items-center gap-1 p-2 bg-white/40 backdrop-blur-xl rounded-full border border-white/50 shadow-lg">
+                            <button className="px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-slate-900 transition-all">Previous</button>
+                            <div className="w-12 h-[2px] bg-slate-100 group-hover:bg-rose-100 transition-colors" />
+                            <button className="px-8 py-3 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-rose-600 transition-all transform hover:scale-105 active:scale-95">Next Resonance</button>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

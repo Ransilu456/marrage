@@ -60,6 +60,16 @@ export class ProposalRepositoryPrisma implements IProposalRepository {
     async findByRecipientId(recipientId: string): Promise<Proposal[]> {
         const proposals = await prisma.proposal.findMany({
             where: { recipientId },
+            include: { proposer: { include: { profile: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+        return proposals.map(p => this.toDomain(p));
+    }
+
+    async findByProposerId(proposerId: string): Promise<Proposal[]> {
+        const proposals = await prisma.proposal.findMany({
+            where: { proposerId },
+            include: { recipient: { include: { profile: true } } },
             orderBy: { createdAt: 'desc' }
         });
         return proposals.map(p => this.toDomain(p));
@@ -73,8 +83,8 @@ export class ProposalRepositoryPrisma implements IProposalRepository {
         return proposals.map(p => this.toDomain(p));
     }
 
-    private toDomain(prismaProposal: PrismaProposal): Proposal {
-        return Proposal.fromPersistence({
+    private toDomain(prismaProposal: any): Proposal {
+        const p = Proposal.fromPersistence({
             id: prismaProposal.id,
             proposerId: prismaProposal.proposerId,
             recipientId: prismaProposal.recipientId,
@@ -83,5 +93,11 @@ export class ProposalRepositoryPrisma implements IProposalRepository {
             createdAt: prismaProposal.createdAt,
             updatedAt: prismaProposal.updatedAt,
         });
+
+        // Attach raw relations for API use (violates strict domain but easier for DTOs)
+        (p as any).props.proposer = prismaProposal.proposer;
+        (p as any).props.recipient = prismaProposal.recipient;
+
+        return p;
     }
 }

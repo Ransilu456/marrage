@@ -33,10 +33,13 @@ export async function GET(req: NextRequest) {
             success: true,
             profiles: profiles.map(p => ({
                 id: p.id,
+                userId: p.userId,
+                name: p.name || (p.gender === 'MALE' ? 'Gentleman' : 'Lady'),
                 age: p.age,
                 gender: p.gender,
                 bio: p.bio,
                 jobStatus: p.jobStatus,
+                jobCategory: p.jobCategory,
                 maritalStatus: p.maritalStatus,
                 location: p.location,
                 photoUrl: p.photoUrl,

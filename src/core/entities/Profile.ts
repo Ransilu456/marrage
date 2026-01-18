@@ -17,6 +17,7 @@ export enum MaritalStatus {
 export interface ProfileProps {
     id: string;
     userId: string;
+    name?: string; // Add name
     gender: string;
     bio: string;
     location: string;
@@ -56,6 +57,7 @@ export class Profile {
     // Getters
     get id(): string { return this.props.id; }
     get userId(): string { return this.props.userId; }
+    get name(): string | undefined { return this.props.name; }
     get dateOfBirth(): Date { return this.props.dateOfBirth; }
     get age(): number {
         return Profile.calculateAge(this.props.dateOfBirth);

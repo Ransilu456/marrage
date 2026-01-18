@@ -31,9 +31,19 @@ export interface IProposalRepository {
     findAll?(): Promise<Proposal[]>;
 
     /**
-     * Find all proposals received by a user
+     * Find proposals received by a user (deprecated in favor of more specific ones if needed, but keeping for compatibility)
      */
     findByRecipientId(recipientId: string): Promise<Proposal[]>;
+
+    /**
+     * Find proposals sent by a user
+     */
+    findByProposerId(proposerId: string): Promise<Proposal[]>;
+
+    /**
+     * Find proposals between two specific users
+     */
+    findByUsers(user1Id: string, user2Id: string): Promise<Proposal | null>;
 
     /**
      * Find proposals by recipient and answer status

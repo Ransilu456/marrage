@@ -12,6 +12,11 @@ export function useNotifications() {
     useEffect(() => {
         if (!session?.user) return;
 
+        // Request notification permission
+        if (typeof window !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
         const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
             cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
             authEndpoint: '/api/pusher/auth',
@@ -22,9 +27,13 @@ export function useNotifications() {
 
         channel.bind('notification', (data: any) => {
             setNotifications(prev => [...prev, data]);
-            // Optional: Show toast
-            if (Notification.permission === 'granted') {
-                new Notification(data.title, { body: data.message });
+
+            // Show browser notification
+            if (typeof window !== 'undefined' && Notification.permission === 'granted') {
+                new Notification(data.title, {
+                    body: data.message,
+                    icon: '/favicon.ico' // Or a better icon if available
+                });
             }
         });
 

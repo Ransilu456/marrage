@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { SendProposalUseCase } from '@/src/core/use-cases/SendProposal';
 import { ProposalRepositoryPrisma } from '@/src/infrastructure/db/ProposalRepositoryPrisma';
 import { ProfileRepositoryPrisma } from '@/src/infrastructure/db/ProfileRepositoryPrisma';
+import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
 
 const createSchema = z.object({
     recipientId: z.string(),
@@ -35,6 +36,14 @@ export async function POST(req: NextRequest) {
 
         const proposal = await useCase.execute(token.sub, result.data.recipientId, result.data.message);
 
+        // Trigger notification for the recipient
+        await triggerMessage(`user-${result.data.recipientId}`, 'notification', {
+            title: 'New Proposal',
+            message: `${token.name || 'Someone'} sent you a marriage proposal!`,
+            type: 'proposal',
+            id: proposal.id
+        });
+
         return NextResponse.json({ success: true, proposal: proposal.toObject() });
     } catch (error) {
         console.error('Proposal creation error:', error);
@@ -51,8 +60,22 @@ export async function GET(req: NextRequest) {
 
     const repo = new ProposalRepositoryPrisma();
     const received = await repo.findByRecipientId(token.sub);
+    const sent = await repo.findByProposerId(token.sub);
+
+    // We can use a trick to get the profile data that was included by Prisma 
+    // but hidden by the domain entity toObject()
+    // Or we just re-fetch if we want to be clean, but since repo already included it:
 
     return NextResponse.json({
-        proposals: received.map(p => p.toObject())
+        received: (received as any[]).map(p => ({
+            ...p.toObject(),
+            senderName: (p as any).props.proposer?.name || 'User',
+            senderPhoto: (p as any).props.proposer?.profile?.photoUrl || ''
+        })),
+        sent: (sent as any[]).map(p => ({
+            ...p.toObject(),
+            recipientName: (p as any).props.recipient?.name || 'User',
+            recipientPhoto: (p as any).props.recipient?.profile?.photoUrl || ''
+        }))
     });
 }

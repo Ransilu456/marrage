@@ -14,6 +14,13 @@ export async function POST(req: NextRequest) {
     const channel_name = body.get('channel_name') as string;
 
     const pusher = getPusherClient();
+    if (!pusher) {
+        return NextResponse.json(
+            { error: 'Real-time service not configured' },
+            { status: 503 }
+        );
+    }
+
     const authResponse = pusher.authenticate(socket_id, channel_name, {
         user_id: token.sub,
         user_info: {

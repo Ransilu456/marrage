@@ -36,19 +36,37 @@ export class ProfileRepositoryPrisma implements IProfileRepository {
     }
 
     async findByUserId(userId: string): Promise<Profile | null> {
-        const found = await prisma.profile.findUnique({ where: { userId } });
-        return found ? this.toDomain(found) : null;
+        const found = await prisma.profile.findUnique({
+            where: { userId },
+            include: { user: { select: { name: true } } }
+        });
+        return found ? this.toDomain(found as any) : null;
     }
 
     async findAll(): Promise<Profile[]> {
-        const found = await prisma.profile.findMany();
-        return found.map(p => this.toDomain(p));
+        const found = await prisma.profile.findMany({
+            include: { user: { select: { name: true } } }
+        });
+        return found.map(p => this.toDomain(p as any));
     }
 
-    private toDomain(p: PrismaProfile): Profile {
+    async findFiltered(filters: { jobStatus?: string; maritalStatus?: string }): Promise<Profile[]> {
+        const where: any = {};
+        if (filters.jobStatus) where.jobStatus = filters.jobStatus;
+        if (filters.maritalStatus) where.maritalStatus = filters.maritalStatus;
+
+        const found = await prisma.profile.findMany({
+            where,
+            include: { user: { select: { name: true } } }
+        });
+        return found.map(p => this.toDomain(p as any));
+    }
+
+    private toDomain(p: PrismaProfile & { user?: { name: string | null } }): Profile {
         return Profile.create({
             id: p.id,
             userId: p.userId,
+            name: p.user?.name || undefined,
             gender: p.gender,
             bio: p.bio,
             location: p.location,
