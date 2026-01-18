@@ -1,0 +1,476 @@
+<html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eternity - Find Your Forever</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet">
+    <style>
+        /* Custom Font Assignments */
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-serif { font-family: 'Playfair Display', serif; }
+        
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 20px; }
+        ::-webkit-scrollbar-thumb:hover { background-color: #cbd5e1; }
+
+        /* Hide default checkbox/radio for custom styling */
+        .custom-check input:checked + div { background-color: #e11d48; border-color: #e11d48; }
+        .custom-check input:checked + div svg { display: block; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-600 antialiased selection:bg-rose-200 selection:text-rose-900">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-rose-100/50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-gradient-to-br from-rose-400 to-orange-400 rounded-lg flex items-center justify-center text-white shadow-lg shadow-rose-500/20">
+                    <iconify-icon icon="lucide:heart-handshake" width="18" stroke-width="1.5"></iconify-icon>
+                </div>
+                <span class="font-serif text-xl tracking-tight text-slate-900 font-medium">Eternity</span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
+                <a href="#" class="text-slate-900 hover:text-rose-600 transition-colors">Discover</a>
+                <a href="#" class="hover:text-rose-600 transition-colors">Stories</a>
+                <a href="#" class="hover:text-rose-600 transition-colors">Membership</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button class="text-sm font-medium text-slate-600 hover:text-slate-900">Log in</button>
+                <button class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium py-2 px-4 rounded-full transition-all shadow-md shadow-rose-500/20 tracking-wide">
+                    Join Now
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="pt-24 pb-20 px-6 max-w-7xl mx-auto space-y-24">
+
+        <!-- SECTION 1: HERO & LOGIN UI -->
+        <section class="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center min-h-[80vh]">
+            <!-- Left: Hero Content -->
+            <div class="space-y-8 relative">
+                <div class="absolute -top-20 -left-20 w-64 h-64 bg-rose-200/30 rounded-full blur-3xl mix-blend-multiply filter"></div>
+                <div class="absolute top-20 left-20 w-72 h-72 bg-orange-100/40 rounded-full blur-3xl mix-blend-multiply filter animation-delay-2000"></div>
+
+                <div class="relative">
+                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-50 border border-rose-100 text-rose-600 text-xs font-medium mb-6">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                        </span>
+                        #1 Trusted Matrimony Platform
+                    </span>
+                    <h1 class="text-5xl lg:text-7xl font-serif text-slate-900 leading-[1.1] tracking-tight">
+                        Stories begin with a simple <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-400 italic pr-2">hello.</span>
+                    </h1>
+                    <p class="text-lg text-slate-500 max-w-md leading-relaxed mt-6">
+                        Discover meaningful connections with verified profiles. We curate matches based on values, personality, and life goals.
+                    </p>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="flex -space-x-3">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&amp;fit=crop&amp;w=64&amp;h=64" class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="">
+                        <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&amp;fit=crop&amp;w=64&amp;h=64" class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="">
+                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&amp;fit=crop&amp;w=64&amp;h=64" class="w-10 h-10 rounded-full border-2 border-white object-cover" alt="">
+                        <div class="w-10 h-10 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600">+2k</div>
+                    </div>
+                    <span class="text-sm text-slate-500">Happy couples this month</span>
+                </div>
+            </div>
+
+            <!-- Right: Login/Register Card -->
+            <div class="relative w-full max-w-md mx-auto lg:ml-auto">
+                <div class="bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-xl shadow-rose-900/5 border border-white relative z-10">
+                    <div class="text-center mb-8">
+                        <h2 class="font-serif text-2xl text-slate-900">Welcome Back</h2>
+                        <p class="text-slate-400 text-sm mt-1">Please enter your details to continue</p>
+                    </div>
+
+                    <form class="space-y-5">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-medium text-slate-700 ml-1">Email Address</label>
+                            <div class="relative group">
+                                <input type="email" placeholder="john@example.com" class="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 block p-3 pl-10 transition-all outline-none placeholder:text-slate-400">
+                                <iconify-icon icon="lucide:mail" class="absolute left-3 top-3.5 text-slate-400 group-focus-within:text-rose-500 transition-colors" width="18" stroke-width="1.5"></iconify-icon>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-medium text-slate-700 ml-1">Password</label>
+                            <div class="relative group">
+                                <input type="password" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 block p-3 pl-10 transition-all outline-none placeholder:text-slate-400">
+                                <iconify-icon icon="lucide:lock" class="absolute left-3 top-3.5 text-slate-400 group-focus-within:text-rose-500 transition-colors" width="18" stroke-width="1.5"></iconify-icon>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="custom-check flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" class="hidden">
+                                <div class="w-4 h-4 border border-slate-300 rounded flex items-center justify-center transition-colors bg-white">
+                                    <iconify-icon icon="lucide:check" class="text-white hidden" width="10" stroke-width="3"></iconify-icon>
+                                </div>
+                                <span class="text-xs text-slate-500 select-none">Remember me</span>
+                            </label>
+                            <a href="#" class="text-xs text-rose-600 hover:text-rose-700 font-medium">Forgot password?</a>
+                        </div>
+
+                        <button type="button" class="w-full bg-slate-900 hover:bg-rose-600 text-white font-medium rounded-xl text-sm px-5 py-3 text-center transition-all shadow-lg hover:shadow-rose-500/25">
+                            Sign In
+                        </button>
+                    </form>
+
+                    <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                        <p class="text-xs text-slate-400">Don't have an account? <a href="#" class="text-rose-600 font-medium hover:underline">Create Profile</a></p>
+                    </div>
+                </div>
+                
+                <!-- Decorative Elements for Login -->
+                <div class="absolute -right-4 -bottom-4 w-full h-full border border-rose-200 rounded-3xl -z-10"></div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 2: DISCOVER INTERFACE -->
+        <section id="discover" class="scroll-mt-24">
+            <div class="flex items-end justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-serif text-slate-900 tracking-tight">Discover Matches</h2>
+                    <p class="text-slate-500 text-sm mt-2">Recommended based on your preferences</p>
+                </div>
+                
+                <!-- View Toggles -->
+                <div class="flex bg-white border border-slate-200 rounded-lg p-1 gap-1 shadow-sm">
+                    <button class="p-2 rounded-md bg-slate-100 text-slate-900 shadow-sm">
+                        <iconify-icon icon="lucide:layout-grid" width="16" stroke-width="1.5"></iconify-icon>
+                    </button>
+                    <button class="p-2 rounded-md hover:bg-slate-50 text-slate-400 hover:text-slate-600">
+                        <iconify-icon icon="lucide:list" width="16" stroke-width="1.5"></iconify-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                
+                <!-- Sidebar Filters -->
+                <aside class="w-full lg:w-64 flex-shrink-0 space-y-8">
+                    <!-- Filter Group 1 -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Looking For</h3>
+                            <iconify-icon icon="lucide:chevron-down" width="14" class="text-slate-400"></iconify-icon>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="custom-check flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" class="hidden" checked="">
+                                <div class="w-4 h-4 border border-slate-300 rounded flex items-center justify-center bg-white group-hover:border-rose-300 transition-colors">
+                                    <iconify-icon icon="lucide:check" class="text-white hidden" width="10" stroke-width="3"></iconify-icon>
+                                </div>
+                                <span class="text-sm text-slate-700">Bride</span>
+                            </label>
+                            <label class="custom-check flex items-center gap-3 cursor-pointer group">
+                                <input type="checkbox" class="hidden">
+                                <div class="w-4 h-4 border border-slate-300 rounded flex items-center justify-center bg-white group-hover:border-rose-300 transition-colors">
+                                    <iconify-icon icon="lucide:check" class="text-white hidden" width="10" stroke-width="3"></iconify-icon>
+                                </div>
+                                <span class="text-sm text-slate-700">Groom</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Filter Group 2 -->
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Age Range</h3>
+                        <div class="px-2">
+                            <div class="relative h-1 bg-slate-200 rounded-full">
+                                <div class="absolute left-1/4 right-1/4 h-full bg-rose-500 rounded-full"></div>
+                                <div class="absolute left-1/4 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-rose-500 rounded-full shadow cursor-pointer hover:scale-110 transition-transform"></div>
+                                <div class="absolute right-1/4 top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-rose-500 rounded-full shadow cursor-pointer hover:scale-110 transition-transform"></div>
+                            </div>
+                            <div class="flex justify-between mt-3 text-xs text-slate-500 font-medium">
+                                <span>24 yrs</span>
+                                <span>32 yrs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Group 3 -->
+                    <div class="space-y-3">
+                         <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Religion</h3>
+                         <div class="relative">
+                            <select class="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-sm rounded-lg p-2.5 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500">
+                                <option>Any</option>
+                                <option>Christianity</option>
+                                <option>Hinduism</option>
+                                <option>Islam</option>
+                                <option>Judaism</option>
+                                <option>Buddhism</option>
+                            </select>
+                            <iconify-icon icon="lucide:chevron-down" class="absolute right-3 top-3.5 text-slate-400 pointer-events-none" width="14"></iconify-icon>
+                         </div>
+                    </div>
+                    
+                    <button class="w-full py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:border-rose-300 hover:text-rose-600 transition-colors">
+                        Reset Filters
+                    </button>
+                </aside>
+
+
+                <!-- Profiles Grid -->
+                <div class="flex-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                        <!-- Card 1 -->
+                        <div class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-rose-900/5 transition-all duration-300 overflow-hidden flex flex-col relative">
+                            <div class="relative aspect-[4/5] overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="Profile" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-80"></div>
+                                
+                                <div class="absolute top-3 right-3">
+                                    <button class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-rose-500 hover:text-white text-white transition-colors">
+                                        <iconify-icon icon="lucide:heart" width="16" stroke-width="1.5"></iconify-icon>
+                                    </button>
+                                </div>
+                                
+                                <div class="absolute bottom-4 left-4 text-white">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-serif text-xl tracking-tight">Sophia, 27</h3>
+                                        <iconify-icon icon="lucide:badge-check" class="text-blue-400" width="16"></iconify-icon>
+                                    </div>
+                                    <p class="text-xs text-white/80 font-light flex items-center gap-1 mt-1">
+                                        <iconify-icon icon="lucide:map-pin" width="10"></iconify-icon>
+                                        Paris, France
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="p-4 flex flex-col gap-3">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] text-slate-500 uppercase tracking-wide font-medium">Architect</span>
+                                    <span class="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] text-slate-500 uppercase tracking-wide font-medium">Never Married</span>
+                                </div>
+                                <p class="text-sm text-slate-500 line-clamp-2">Passionate about design and travel. Looking for someone who enjoys art galleries and Sunday brunches.</p>
+                                <button class="mt-2 w-full py-2.5 rounded-lg border border-rose-100 bg-rose-50 text-rose-600 text-sm font-medium hover:bg-rose-600 hover:text-white transition-colors flex items-center justify-center gap-2">
+                                    View Profile
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-rose-900/5 transition-all duration-300 overflow-hidden flex flex-col">
+                            <div class="relative aspect-[4/5] overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="Profile" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-80"></div>
+                                
+                                <div class="absolute top-3 right-3">
+                                    <button class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-rose-500 hover:text-white text-white transition-colors">
+                                        <iconify-icon icon="lucide:heart" width="16" stroke-width="1.5"></iconify-icon>
+                                    </button>
+                                </div>
+
+                                <div class="absolute bottom-4 left-4 text-white">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-serif text-xl tracking-tight">Liam, 29</h3>
+                                        <iconify-icon icon="lucide:badge-check" class="text-blue-400" width="16"></iconify-icon>
+                                    </div>
+                                    <p class="text-xs text-white/80 font-light flex items-center gap-1 mt-1">
+                                        <iconify-icon icon="lucide:map-pin" width="10"></iconify-icon>
+                                        London, UK
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="p-4 flex flex-col gap-3">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] text-slate-500 uppercase tracking-wide font-medium">Software Eng.</span>
+                                    <span class="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] text-slate-500 uppercase tracking-wide font-medium">Never Married</span>
+                                </div>
+                                <p class="text-sm text-slate-500 line-clamp-2">Tech enthusiast with a love for hiking. Seeking a partner to explore the great outdoors.</p>
+                                <button class="mt-2 w-full py-2.5 rounded-lg border border-rose-100 bg-rose-50 text-rose-600 text-sm font-medium hover:bg-rose-600 hover:text-white transition-colors flex items-center justify-center gap-2">
+                                    View Profile
+                                </button>
+                            </div>
+                        </div>
+
+                         <!-- Card 3 -->
+                         <div class="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-rose-900/5 transition-all duration-300 overflow-hidden flex flex-col">
+                            <div class="relative aspect-[4/5] overflow-hidden">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&amp;fit=crop&amp;w=600&amp;q=80" alt="Profile" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent opacity-80"></div>
+                                
+                                <div class="absolute top-3 right-3">
+                                    <button class="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-rose-500 hover:text-white text-white transition-colors">
+                                        <iconify-icon icon="lucide:heart" width="16" stroke-width="1.5"></iconify-icon>
+                                    </button>
+                                </div>
+
+                                <div class="absolute bottom-4 left-4 text-white">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-serif text-xl tracking-tight">Elena, 26</h3>
+                                    </div>
+                                    <p class="text-xs text-white/80 font-light flex items-center gap-1 mt-1">
+                                        <iconify-icon icon="lucide:map-pin" width="10"></iconify-icon>
+                                        Madrid, Spain
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="p-4 flex flex-col gap-3">
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] text-slate-500 uppercase tracking-wide font-medium">Doctor</span>
+                                    <span class="px-2 py-1 bg-slate-50 border border-slate-100 rounded text-[10px] text-slate-500 uppercase tracking-wide font-medium">Never Married</span>
+                                </div>
+                                <p class="text-sm text-slate-500 line-clamp-2">Kind-hearted and family-oriented. I love cooking and spending quiet evenings at home.</p>
+                                <button class="mt-2 w-full py-2.5 rounded-lg border border-rose-100 bg-rose-50 text-rose-600 text-sm font-medium hover:bg-rose-600 hover:text-white transition-colors flex items-center justify-center gap-2">
+                                    View Profile
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <div class="mt-12 flex items-center justify-center gap-2">
+                        <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 text-slate-500 hover:border-rose-500 hover:text-rose-600 transition-colors">
+                            <iconify-icon icon="lucide:chevron-left" width="16"></iconify-icon>
+                        </button>
+                        <button class="w-10 h-10 rounded-lg flex items-center justify-center bg-rose-600 text-white shadow-md shadow-rose-500/20 text-sm font-medium">1</button>
+                        <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 text-slate-500 hover:border-rose-500 hover:text-rose-600 transition-colors text-sm font-medium">2</button>
+                        <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 text-slate-500 hover:border-rose-500 hover:text-rose-600 transition-colors text-sm font-medium">3</button>
+                        <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-slate-200 text-slate-500 hover:border-rose-500 hover:text-rose-600 transition-colors">
+                            <iconify-icon icon="lucide:chevron-right" width="16"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: DETAILED PROFILE VIEW (Simulating a selected profile state) -->
+        <section class="border-t border-slate-200 pt-16">
+            <div class="mb-8 flex items-center gap-4">
+                <div class="h-[1px] bg-slate-200 flex-1"></div>
+                <span class="text-xs uppercase tracking-widest text-slate-400 font-semibold">Profile Preview</span>
+                <div class="h-[1px] bg-slate-200 flex-1"></div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 overflow-hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3">
+                    <!-- Left: Images -->
+                    <div class="lg:col-span-1 bg-slate-50 p-6 space-y-4">
+                        <div class="aspect-[3/4] rounded-2xl overflow-hidden shadow-sm relative group">
+                            <img src="https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?auto=format&amp;fit=crop&amp;w=800&amp;q=80" class="w-full h-full object-cover">
+                            <div class="absolute bottom-4 left-0 w-full flex justify-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-white shadow"></div>
+                                <div class="w-2 h-2 rounded-full bg-white/50"></div>
+                                <div class="w-2 h-2 rounded-full bg-white/50"></div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                             <img src="https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?auto=format&amp;fit=crop&amp;w=200&amp;q=80" class="aspect-square rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity">
+                             <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/917d6f93-fb36-439a-8c48-884b67b35381_1600w.jpg" class="aspect-square rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity">
+                             <div class="aspect-square rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-200 transition-colors">
+                                <iconify-icon icon="lucide:image" width="20"></iconify-icon>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Info -->
+                    <div class="lg:col-span-2 p-8 lg:p-12">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h2 class="text-4xl font-serif text-slate-900 tracking-tight">Isabella, 28</h2>
+                                <p class="text-slate-500 mt-2 flex items-center gap-2">
+                                    <span class="flex items-center gap-1 text-slate-700 font-medium"><iconify-icon icon="lucide:briefcase" width="14"></iconify-icon> Graphic Designer</span>
+                                    <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+                                    <span>New York, NY</span>
+                                </p>
+                            </div>
+                            <div class="flex gap-3">
+                                <button class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-colors">
+                                    <iconify-icon icon="lucide:share-2" width="16"></iconify-icon>
+                                </button>
+                                <button class="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-colors">
+                                    <iconify-icon icon="lucide:bookmark" width="16"></iconify-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="my-8 h-[1px] bg-slate-100"></div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="font-serif text-lg text-slate-900 mb-3">About Me</h3>
+                                <p class="text-slate-600 leading-relaxed text-sm">
+                                    I am a creative soul who sees beauty in the little things. My friends describe me as empathetic, ambitious, and always ready for a new adventure. I believe in building a relationship grounded in mutual respect and shared laughter.
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 class="font-serif text-lg text-slate-900 mb-3">Lifestyle &amp; Values</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-medium border border-slate-100 flex items-center gap-2">
+                                        <iconify-icon icon="lucide:users" width="12" class="text-rose-400"></iconify-icon> Family Oriented
+                                    </span>
+                                    <span class="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-medium border border-slate-100 flex items-center gap-2">
+                                        <iconify-icon icon="lucide:sun" width="12" class="text-rose-400"></iconify-icon> Morning Person
+                                    </span>
+                                    <span class="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-medium border border-slate-100 flex items-center gap-2">
+                                        <iconify-icon icon="lucide:book-open" width="12" class="text-rose-400"></iconify-icon> Avid Reader
+                                    </span>
+                                    <span class="px-3 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-medium border border-slate-100 flex items-center gap-2">
+                                        <iconify-icon icon="lucide:coffee" width="12" class="text-rose-400"></iconify-icon> Non-Smoker
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4 pt-4">
+                                <div class="bg-rose-50/50 p-4 rounded-xl border border-rose-100/50">
+                                    <span class="block text-xs uppercase tracking-wider text-rose-400 font-semibold mb-1">Height</span>
+                                    <span class="text-slate-700 font-medium">5' 7" (170 cm)</span>
+                                </div>
+                                <div class="bg-rose-50/50 p-4 rounded-xl border border-rose-100/50">
+                                    <span class="block text-xs uppercase tracking-wider text-rose-400 font-semibold mb-1">Education</span>
+                                    <span class="text-slate-700 font-medium">Masters in Arts</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 flex gap-4">
+                            <button class="flex-1 bg-rose-600 text-white font-medium py-3 rounded-xl hover:bg-rose-700 transition-all shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2">
+                                <iconify-icon icon="lucide:mail" width="18"></iconify-icon>
+                                Send Interest
+                            </button>
+                            <button class="px-6 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                                Shortlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-100 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-slate-900 rounded-md flex items-center justify-center text-white">
+                    <iconify-icon icon="lucide:heart-handshake" width="14"></iconify-icon>
+                </div>
+                <span class="font-serif text-lg text-slate-900 font-medium">Eternity</span>
+            </div>
+            <p class="text-slate-400 text-sm">© 2023 Eternity Matrimony. Crafted with love.</p>
+            <div class="flex gap-4 text-slate-400">
+                <a href="#" class="hover:text-rose-500 transition-colors"><iconify-icon icon="lucide:instagram" width="18"></iconify-icon></a>
+                <a href="#" class="hover:text-rose-500 transition-colors"><iconify-icon icon="lucide:twitter" width="18"></iconify-icon></a>
+                <a href="#" class="hover:text-rose-500 transition-colors"><iconify-icon icon="lucide:linkedin" width="18"></iconify-icon></a>
+            </div>
+        </div>
+    </footer>
+
+
+</body></html>
