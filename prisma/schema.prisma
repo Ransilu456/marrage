@@ -60,6 +60,8 @@ model Profile {
   
   // Media
   photoUrl      String
+  coverUrl      String?   // New field for cover photo
+  photoGallery  String?   // New field for multiple photos (comma-separated)
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

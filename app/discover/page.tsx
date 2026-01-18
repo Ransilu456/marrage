@@ -1,136 +1,203 @@
 'use client';
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Heart, Search, MapPin, Loader2 } from 'lucide-react';
 
-interface ProfileDTO {
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Search, MapPin, Heart, ChevronLeft,
+    ChevronRight, BadgeCheck, LayoutGrid,
+    List, Briefcase, Filter, X, ChevronDown
+} from 'lucide-react';
+import Link from 'next/link';
+
+interface Profile {
     id: string;
+    userId: string;
     age: number;
     gender: string;
     bio: string;
+    location: string;
+    photoUrl: string;
+    jobCategory: string;
     jobStatus: string;
     maritalStatus: string;
-    location: string;
-    photoUrl?: string;
 }
 
 export default function DiscoverPage() {
-    const { data: session, status } = useSession();
-    const router = useRouter();
-    const [profiles, setProfiles] = useState<ProfileDTO[]>([]);
+    const [profiles, setProfiles] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({
+        jobStatus: '',
+        maritalStatus: '',
+    });
 
     useEffect(() => {
-        if (status === "unauthenticated") {
-            router.push("/auth/login");
-        } else if (status === "authenticated") {
-            fetchProfiles();
-        }
-    }, [status, router]);
+        fetchProfiles();
+    }, [filters]);
 
     const fetchProfiles = async () => {
+        setLoading(true);
         try {
-            const res = await fetch('/api/profiles');
-            if (res.ok) {
-                const data = await res.json();
-                setProfiles(data.profiles || []);
-            }
+            const params = new URLSearchParams();
+            if (filters.jobStatus) params.append('jobStatus', filters.jobStatus);
+            if (filters.maritalStatus) params.append('maritalStatus', filters.maritalStatus);
+
+            const response = await fetch(`/api/profiles?${params.toString()}`);
+            const data = await response.json();
+            setProfiles(data.profiles || []);
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching profiles:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    if (status === "loading" || loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 text-gray-200 animate-spin" />
-            </div>
-        );
-    }
-
     return (
-        <div className="max-w-7xl mx-auto px-8 py-12 md:py-24">
-            <header className="mb-20 flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div>
-                    <h1 className="text-4xl md:text-6xl font-black text-gray-900 tracking-tighter uppercase mb-4">
-                        Discover <br />
-                        <span className="text-gray-200">Personalities.</span>
-                    </h1>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
-                        {profiles.length} Curated Connections Found
-                    </p>
+        <div className="bg-slate-50 min-h-screen pt-12">
+            <main className="max-w-7xl mx-auto px-6 pb-20">
+                <div className="flex items-end justify-between mb-12">
+                    <div>
+                        <h2 className="text-4xl font-serif text-slate-900 tracking-tight">Discover Matches</h2>
+                        <p className="text-slate-500 text-sm mt-3">Curated recommendations based on your unique essence</p>
+                    </div>
+
+                    <div className="flex bg-white border border-slate-200 rounded-lg p-1 gap-1 shadow-sm">
+                        <button className="p-2 rounded-md bg-slate-100 text-slate-900 shadow-sm">
+                            <LayoutGrid size={16} strokeWidth={1.5} />
+                        </button>
+                        <button className="p-2 rounded-md hover:bg-slate-50 text-slate-400 hover:text-slate-600">
+                            <List size={16} strokeWidth={1.5} />
+                        </button>
+                    </div>
                 </div>
 
-                <div className="flex gap-4">
-                    <button className="px-6 py-3 bg-gray-50 rounded-full border border-gray-100 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-all">
-                        <Search className="w-3.5 h-3.5" />
-                        Search
-                    </button>
-                    <Link href="/profile" className="px-6 py-3 bg-gray-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all">
-                        My Office
-                    </Link>
-                </div>
-            </header>
+                <div className="flex flex-col lg:grid lg:grid-cols-4 gap-12">
+                    {/* Sidebar Filters */}
+                    <aside className="lg:col-span-1 space-y-10">
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Employment</h3>
+                            <div className="relative">
+                                <select
+                                    value={filters.jobStatus}
+                                    onChange={(e) => setFilters({ ...filters, jobStatus: e.target.value })}
+                                    className="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-sm rounded-xl p-3 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/10"
+                                >
+                                    <option value="">Any Status</option>
+                                    <option value="EMPLOYED">Employed</option>
+                                    <option value="SELF_EMPLOYED">Self Employed</option>
+                                    <option value="STUDENT">Student</option>
+                                    <option value="RETIRED">Retired</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={14} />
+                            </div>
+                        </div>
 
-            {profiles.length === 0 ? (
-                <div className="text-center py-24">
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-200">Silence in the collective.</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-16">
-                    {profiles.map((profile, i) => (
-                        <motion.div
-                            key={profile.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.05 }}
-                            className="group"
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400">Marital Identity</h3>
+                            <div className="relative">
+                                <select
+                                    value={filters.maritalStatus}
+                                    onChange={(e) => setFilters({ ...filters, maritalStatus: e.target.value })}
+                                    className="w-full appearance-none bg-white border border-slate-200 text-slate-700 text-sm rounded-xl p-3 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500/10"
+                                >
+                                    <option value="">Any History</option>
+                                    <option value="SINGLE">Never Married</option>
+                                    <option value="DIVORCED">Divorced</option>
+                                    <option value="WIDOWED">Widowed</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-3.5 text-slate-400 pointer-events-none" size={14} />
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setFilters({ jobStatus: '', maritalStatus: '' })}
+                            className="w-full py-2.5 bg-slate-100 hover:bg-white border border-slate-100 hover:border-rose-200 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-rose-600 transition-all rounded-xl"
                         >
-                            <Link href={`/chat/${profile.id}`}>
-                                <div className="aspect-[4/5] bg-gray-50 rounded-[2.5rem] overflow-hidden mb-8 relative">
-                                    {profile.photoUrl ? (
-                                        <img src={profile.photoUrl} alt="Portrait" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-200 uppercase font-black tracking-tighter text-4xl">No Image</div>
-                                    )}
-                                    <div className="absolute top-6 right-6 p-3 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Heart className="w-4 h-4 fill-white" />
-                                    </div>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-end">
-                                        <div>
-                                            <h3 className="text-2xl font-bold tracking-tight text-gray-900">
-                                                {profile.gender === 'Male' ? 'M' : 'F'}, {profile.age}
-                                            </h3>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-rose-600 mt-1">
-                                                {profile.jobStatus}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                                            <MapPin className="w-3 h-3" />
-                                            {profile.location || 'Local'}
-                                        </div>
-                                    </div>
-                                    <p className="text-gray-400 text-sm font-medium line-clamp-2 leading-relaxed">
-                                        {profile.bio || "Searching for a meaningful connection."}
-                                    </p>
-                                    <div className="pt-4 flex items-center gap-4">
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-300 border border-gray-100 px-3 py-1 rounded-full">
-                                            {profile.maritalStatus}
-                                        </span>
-                                    </div>
-                                </div>
-                            </Link>
-                        </motion.div>
-                    ))}
+                            Reset Essence
+                        </button>
+                    </aside>
+
+                    {/* Profiles Grid */}
+                    <div className="lg:col-span-3">
+                        {loading ? (
+                            <div className="flex justify-center py-20">
+                                <div className="w-12 h-12 border-4 border-rose-100 border-t-rose-600 rounded-full animate-spin" />
+                            </div>
+                        ) : profiles.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                <AnimatePresence>
+                                    {profiles.map((profile, index) => (
+                                        <motion.div
+                                            key={profile.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05 }}
+                                            className="group bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-500 overflow-hidden flex flex-col"
+                                        >
+                                            <div className="relative aspect-[4/5] overflow-hidden">
+                                                <img
+                                                    src={profile.photoUrl || "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80"}
+                                                    alt={profile.bio}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80" />
+
+                                                <div className="absolute top-4 right-4">
+                                                    <button className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-rose-500 hover:text-white text-white transition-all border border-white/30">
+                                                        <Heart size={18} strokeWidth={1.5} />
+                                                    </button>
+                                                </div>
+
+                                                <div className="absolute bottom-6 left-6 right-6 text-white text-center">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <h3 className="font-serif text-2xl tracking-tight">{profile.gender === 'FEMALE' ? 'Sophia' : 'Liam'}, {profile.age}</h3>
+                                                        <BadgeCheck className="text-rose-400" size={18} />
+                                                    </div>
+                                                    <p className="text-[10px] text-white/70 uppercase tracking-[0.3em] font-black mt-2 flex items-center justify-center gap-1">
+                                                        <MapPin size={10} /> {profile.location}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="p-6 flex flex-col gap-4 text-center">
+                                                <div className="flex justify-center flex-wrap gap-2">
+                                                    <span className="px-3 py-1 bg-slate-50 border border-slate-100 rounded-full text-[10px] text-slate-500 uppercase tracking-widest font-black">
+                                                        {profile.jobCategory}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-slate-500 line-clamp-2 italic leading-relaxed">
+                                                    "{profile.bio}"
+                                                </p>
+                                                <Link
+                                                    href={`/chat/${profile.userId}`}
+                                                    className="mt-2 w-full py-3 rounded-2xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest hover:bg-rose-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-900/5"
+                                                >
+                                                    Connect Heart
+                                                </Link>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+                                <p className="text-slate-400 font-serif text-lg">No souls found matching this essence...</p>
+                            </div>
+                        )}
+
+                        {profiles.length > 0 && (
+                            <div className="mt-16 flex items-center justify-center gap-3">
+                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-400 hover:border-rose-200 hover:text-rose-600 transition-all bg-white">
+                                    <ChevronLeft size={20} />
+                                </button>
+                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center bg-rose-600 text-white shadow-lg shadow-rose-500/20 text-sm font-black tracking-widest">1</button>
+                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-400 hover:border-rose-200 hover:text-rose-600 transition-all bg-white text-sm font-black tracking-widest">2</button>
+                                <button className="w-12 h-12 rounded-2xl flex items-center justify-center border border-slate-100 text-slate-400 hover:border-rose-200 hover:text-rose-600 transition-all bg-white">
+                                    <ChevronRight size={20} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            )}
+            </main>
         </div>
     );
 }

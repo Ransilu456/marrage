@@ -29,4 +29,14 @@ export interface IProposalRepository {
      * Find all proposals (optional, for future expansion)
      */
     findAll?(): Promise<Proposal[]>;
+
+    /**
+     * Find all proposals received by a user
+     */
+    findByRecipientId(recipientId: string): Promise<Proposal[]>;
+
+    /**
+     * Find proposals by recipient and answer status
+     */
+    findByRecipientAndStatus(recipientId: string, status: string): Promise<Proposal[]>;
 }

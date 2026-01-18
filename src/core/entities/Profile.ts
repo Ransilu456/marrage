@@ -24,6 +24,8 @@ export interface ProfileProps {
     jobStatus: JobStatus;
     maritalStatus: MaritalStatus;
     photoUrl: string;
+    coverUrl?: string;
+    photoGallery?: string; // Comma-separated or serialized
     jobCategory: string;
     contactDetails: string;
     createdAt: Date;
@@ -59,6 +61,8 @@ export class Profile {
     get maritalStatus(): MaritalStatus { return this.props.maritalStatus; }
     get location(): string { return this.props.location; }
     get photoUrl(): string { return this.props.photoUrl; }
+    get coverUrl(): string | undefined { return this.props.coverUrl; }
+    get photoGallery(): string | undefined { return this.props.photoGallery; }
     get bio(): string { return this.props.bio; }
     get jobCategory(): string { return this.props.jobCategory; }
     get contactDetails(): string { return this.props.contactDetails; }

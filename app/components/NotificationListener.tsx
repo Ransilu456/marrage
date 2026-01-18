@@ -9,7 +9,7 @@ export default function NotificationListener() {
         if (notifications.length > 0) {
             const latest = notifications[notifications.length - 1];
             // Simple alert for now
-            // alert(`New Notification: ${latest.message}`);
+            alert(`New Notification: ${latest.message}`);
             console.log("New Notification", latest);
         }
     }, [notifications]);

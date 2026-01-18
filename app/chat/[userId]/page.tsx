@@ -33,23 +33,25 @@ export default function ChatPage() {
             fetchMessages();
             fetchRecipientProfile();
 
-            const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-                cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-            });
-
-            const channelId = [session.user.id, userId as string].sort().join('-');
-            const channel = pusher.subscribe(`chat-${channelId}`);
-
-            channel.bind('new-message', (data: Message) => {
-                setMessages(prev => {
-                    if (prev.find(m => m.id === data.id)) return prev;
-                    return [...prev, data];
+            if (process.env.NEXT_PUBLIC_PUSHER_KEY) {
+                const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+                    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
                 });
-            });
 
-            return () => {
-                pusher.unsubscribe(`chat-${channelId}`);
-            };
+                const channelId = [session.user.id, userId as string].sort().join('-');
+                const channel = pusher.subscribe(`chat-${channelId}`);
+
+                channel.bind('new-message', (data: Message) => {
+                    setMessages(prev => {
+                        if (prev.find(m => m.id === data.id)) return prev;
+                        return [...prev, data];
+                    });
+                });
+
+                return () => {
+                    pusher.unsubscribe(`chat-${channelId}`);
+                };
+            }
         }
     }, [session, userId]);
 
@@ -156,8 +158,8 @@ export default function ChatPage() {
                                 className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div className={`max-w-[75%] px-6 py-4 rounded-[1.5rem] ${isMe
-                                        ? 'bg-gray-900 text-white rounded-tr-none'
-                                        : 'bg-gray-50 text-gray-900 rounded-tl-none border border-gray-100'
+                                    ? 'bg-gray-900 text-white rounded-tr-none'
+                                    : 'bg-gray-50 text-gray-900 rounded-tl-none border border-gray-100'
                                     }`}>
                                     <p className="text-sm font-medium leading-relaxed">{msg.content}</p>
                                     <div className={`text-[9px] uppercase font-black tracking-widest mt-2 ${isMe ? 'text-gray-400' : 'text-gray-300'}`}>

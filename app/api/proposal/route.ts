@@ -54,26 +54,28 @@ export async function GET(req: NextRequest) {
     if (!token || !token.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const repo = new ProposalRepositoryPrisma();
-    // Find latest proposal where user is involved
-    // We might want to filter by "Active" (Pending)
-    // For now, let's get any pending proposal received
 
-    // Custom query needed for "Pending Received Proposal"
-    // But repo.findLatest() was generic.
-    // We'll use repo.findLatest() strategy but check IDs?
+    // Check for a specific proposal ID in query params?
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
 
-    // Ideally we want: "Is there a pending proposal waiting for me?"
-    const allProposals = await (repo as any).findByRecipient(token.sub); // Need valid method
-    // Or simpler: find by latest match?
+    if (id) {
+        const proposal = await repo.findById(id);
+        if (!proposal) return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
+        if (proposal.recipientId !== token.sub && proposal.proposerId !== token.sub) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        }
+        return NextResponse.json({ proposal: proposal.toObject() });
+    }
 
-    // MVP: Fetch "received" proposals
-    // Since I don't have findByRecipient in interface yet, I'll use prisma directly or add it.
-    // I added findByUsers.
+    // Default: return the latest pending proposal received by the user
+    const pendingProposals = await repo.findByRecipientAndStatus(token.sub, ProposalAnswer.PENDING);
 
-    // Let's rely on finding a proposal via ID from frontend, or implement findPendingReceived in repo.
-    // For this route, let's return "empty" if we haven't implemented a specific fetch all logic yet
-    // OR just use findLatest() if generic. 
+    if (pendingProposals.length > 0) {
+        return NextResponse.json({ proposal: pendingProposals[0].toObject() });
+    }
 
-    // Actually, I'll skip GET here for now and rely on specific Proposal pages.
-    return NextResponse.json({ message: "Use /api/proposals to list proposals" });
+    // If no pending, maybe return the absolute latest one (sent or received)
+    const latest = await repo.findLatest();
+    return NextResponse.json({ proposal: latest ? latest.toObject() : null });
 }

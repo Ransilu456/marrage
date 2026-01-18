@@ -1,20 +1,24 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import AuthProvider from "./providers";
-import NotificationListener from "./components/NotificationListener";
 import Navbar from "./components/Navbar";
+import ProfileGuard from "./components/ProfileGuard";
 
 import "./globals.css";
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Matrimony App",
-  description: "Find your perfect match",
+  title: "Eternity - Find Your Forever",
+  description: "Modern matrimony platform for meaningful connections.",
 };
 
 export default function RootLayout({
@@ -25,23 +29,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} font-sans antialiased text-slate-900`}
+        className={`${inter.variable} ${playfair.variable} antialiased selection:bg-rose-100 selection:text-rose-900 bg-slate-50`}
       >
         <AuthProvider>
-          <NotificationListener />
-          <Navbar />
-          <main className="min-h-screen relative pt-20 bg-[#fdfcfb]">
-            {/* Subtle Background Pattern */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.4] mix-blend-multiply transition-opacity duration-500"
-              style={{
-                backgroundImage: `radial-gradient(#e2e8f0 1px, transparent 1px)`,
-                backgroundSize: '32px 32px'
-              }}
-            />
-            <div className="z-10 relative">
+          <ProfileGuard>
+            <Navbar />
+            <main className="min-h-screen pt-16">
               {children}
-            </div>
-          </main>
+            </main>
+          </ProfileGuard>
         </AuthProvider>
       </body>
     </html>

@@ -57,6 +57,22 @@ export class ProposalRepositoryPrisma implements IProposalRepository {
         return proposal ? this.toDomain(proposal) : null;
     }
 
+    async findByRecipientId(recipientId: string): Promise<Proposal[]> {
+        const proposals = await prisma.proposal.findMany({
+            where: { recipientId },
+            orderBy: { createdAt: 'desc' }
+        });
+        return proposals.map(p => this.toDomain(p));
+    }
+
+    async findByRecipientAndStatus(recipientId: string, status: string): Promise<Proposal[]> {
+        const proposals = await prisma.proposal.findMany({
+            where: { recipientId, answer: status },
+            orderBy: { createdAt: 'desc' }
+        });
+        return proposals.map(p => this.toDomain(p));
+    }
+
     private toDomain(prismaProposal: PrismaProposal): Proposal {
         return Proposal.fromPersistence({
             id: prismaProposal.id,

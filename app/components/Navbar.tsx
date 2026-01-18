@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Heart } from 'lucide-react';
+import { Heart, Menu, X, HeartHandshake } from 'lucide-react';
 
 export default function Navbar() {
     const { data: session } = useSession();
@@ -17,85 +17,78 @@ export default function Navbar() {
     const navItems = [
         { name: 'Discover', href: '/discover' },
         { name: 'Proposals', href: '/proposals' },
+        { name: 'Messages', href: '/chat' },
     ];
 
     return (
-        <nav className="fixed w-full z-[100] top-0 left-0 border-b border-gray-50 bg-white/80 backdrop-blur-md transition-all duration-500">
-            <div className="max-w-7xl mx-auto px-8 sm:px-12">
-                <div className="flex justify-between h-20 items-center">
-                    {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            className="text-gray-900"
-                        >
-                            <Heart className="w-6 h-6 fill-rose-600 stroke-none" />
-                        </motion.div>
-                        <span className="text-xl font-bold tracking-tighter text-gray-900 uppercase">
-                            Marrage
-                        </span>
-                    </Link>
+        <nav className="fixed w-full z-[100] top-0 left-0 bg-white/80 backdrop-blur-md border-b border-rose-100/50 transition-all duration-500">
+            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                {/* Logo */}
+                <Link href="/" className="flex items-center gap-2 group">
+                    <div className="w-8 h-8 bg-gradient-to-br from-rose-400 to-orange-400 rounded-lg flex items-center justify-center text-white shadow-lg shadow-rose-500/20 group-hover:scale-105 transition-transform">
+                        <HeartHandshake size={18} strokeWidth={1.5} />
+                    </div>
+                    <span className="font-serif text-xl tracking-tight text-slate-900 font-medium">
+                        Eternity
+                    </span>
+                </Link>
 
-                    {/* Desktop Menu */}
-                    <div className="hidden md:flex items-center space-x-12">
+                {/* Desktop Menu */}
+                <div className="hidden md:flex items-center gap-8">
+                    <div className="flex items-center gap-8 text-sm font-medium text-slate-500">
                         {navItems.map((item) => (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className="relative py-2"
+                                className={`transition-colors hover:text-rose-600 ${pathname === item.href ? 'text-slate-900' : ''
+                                    }`}
                             >
-                                <span className={`text-[12px] font-bold uppercase tracking-[0.2em] transition-all duration-300 ${pathname === item.href ? 'text-gray-900' : 'text-gray-400 hover:text-gray-900'
-                                    }`}>
-                                    {item.name}
-                                </span>
-                                {pathname === item.href && (
-                                    <motion.span
-                                        layoutId="nav-underline"
-                                        className="absolute -bottom-1 left-0 w-full h-[1px] bg-gray-900"
-                                    />
-                                )}
+                                {item.name}
                             </Link>
                         ))}
-
-                        {session ? (
-                            <div className="flex items-center gap-8 pl-4 border-l border-gray-100">
-                                <Link
-                                    href="/profile"
-                                    className="text-[12px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-gray-900 transition-colors"
-                                >
-                                    My Profile
-                                </Link>
-                                <button
-                                    onClick={() => signOut()}
-                                    className="text-[12px] font-bold uppercase tracking-[0.2em] text-rose-500 hover:text-rose-600 transition-colors cursor-pointer"
-                                >
-                                    Log out
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-8 pl-4 border-l border-gray-100">
-                                <Link
-                                    href="/auth/login"
-                                    className="text-[12px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-gray-900 transition-colors"
-                                >
-                                    Login
-                                </Link>
-                                <Link
-                                    href="/auth/register"
-                                    className="px-6 py-2.5 bg-gray-900 text-white font-bold text-[11px] uppercase tracking-[0.2em] rounded-full hover:bg-black transition-all shadow-sm"
-                                >
-                                    Join Now
-                                </Link>
-                            </div>
-                        )}
                     </div>
 
-                    {/* Mobile Menu Button */}
-                    <div className="md:hidden flex items-center">
-                        <button onClick={toggleMenu} className="text-gray-900">
-                            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-                    </div>
+                    <div className="h-4 w-[1px] bg-slate-200 mx-2" />
+
+                    {session ? (
+                        <div className="flex items-center gap-6">
+                            <Link
+                                href="/profile"
+                                className={`text-sm font-medium transition-colors hover:text-rose-600 ${pathname === '/profile' ? 'text-slate-900' : 'text-slate-500'
+                                    }`}
+                            >
+                                Profile
+                            </Link>
+                            <button
+                                onClick={() => signOut()}
+                                className="text-sm font-medium text-slate-500 hover:text-rose-600 transition-colors"
+                            >
+                                Log out
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-4">
+                            <Link
+                                href="/auth/login"
+                                className="text-sm font-medium text-slate-600 hover:text-slate-900"
+                            >
+                                Log in
+                            </Link>
+                            <Link
+                                href="/auth/register"
+                                className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium py-2 px-5 rounded-full transition-all shadow-md shadow-rose-500/20 tracking-wide"
+                            >
+                                Join Now
+                            </Link>
+                        </div>
+                    )}
+                </div>
+
+                {/* Mobile Menu Button */}
+                <div className="md:hidden flex items-center">
+                    <button onClick={toggleMenu} className="text-slate-600">
+                        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    </button>
                 </div>
             </div>
 
@@ -103,58 +96,57 @@ export default function Navbar() {
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="md:hidden bg-white border-t border-gray-50"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden bg-white border-t border-rose-50 overflow-hidden"
                     >
-                        <div className="px-8 pt-8 pb-12 space-y-6">
+                        <div className="px-6 py-8 flex flex-col gap-6">
                             {navItems.map((item) => (
                                 <Link
                                     key={item.name}
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
-                                    className="block text-sm font-bold uppercase tracking-widest text-gray-400 hover:text-gray-900"
+                                    className={`text-base font-medium transition-colors ${pathname === item.href ? 'text-rose-600' : 'text-slate-600'
+                                        }`}
                                 >
                                     {item.name}
                                 </Link>
                             ))}
-                            <div className="pt-8 border-t border-gray-50 mt-8 space-y-6">
-                                {session ? (
-                                    <>
-                                        <Link
-                                            href="/profile"
-                                            onClick={() => setIsOpen(false)}
-                                            className="block text-sm font-bold uppercase tracking-widest text-gray-400"
-                                        >
-                                            My Profile
-                                        </Link>
-                                        <button
-                                            onClick={() => { signOut(); setIsOpen(false); }}
-                                            className="block w-full text-left text-sm font-bold uppercase tracking-widest text-rose-500"
-                                        >
-                                            Log out
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Link
-                                            href="/auth/login"
-                                            onClick={() => setIsOpen(false)}
-                                            className="block text-sm font-bold uppercase tracking-widest text-gray-400"
-                                        >
-                                            Login
-                                        </Link>
-                                        <Link
-                                            href="/auth/register"
-                                            onClick={() => setIsOpen(false)}
-                                            className="block text-center px-6 py-4 bg-gray-900 text-white rounded-full font-bold uppercase tracking-widest text-xs"
-                                        >
-                                            Join Now
-                                        </Link>
-                                    </>
-                                )}
-                            </div>
+                            {session ? (
+                                <>
+                                    <Link
+                                        href="/profile"
+                                        onClick={() => setIsOpen(false)}
+                                        className="text-base font-medium text-slate-600"
+                                    >
+                                        Profile
+                                    </Link>
+                                    <button
+                                        onClick={() => { signOut(); setIsOpen(false); }}
+                                        className="text-left text-base font-medium text-rose-600"
+                                    >
+                                        Log out
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link
+                                        href="/auth/login"
+                                        onClick={() => setIsOpen(false)}
+                                        className="text-base font-medium text-slate-600"
+                                    >
+                                        Log in
+                                    </Link>
+                                    <Link
+                                        href="/auth/register"
+                                        onClick={() => setIsOpen(false)}
+                                        className="bg-rose-600 text-white text-center font-medium py-3 rounded-xl"
+                                    >
+                                        Join Eternity
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}

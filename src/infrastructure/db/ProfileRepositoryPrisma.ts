@@ -14,6 +14,8 @@ export class ProfileRepositoryPrisma implements IProfileRepository {
             jobStatus: profile.jobStatus.toString(),
             maritalStatus: profile.maritalStatus.toString(),
             photoUrl: profile.photoUrl,
+            coverUrl: profile.coverUrl || null,
+            photoGallery: profile.photoGallery || null,
             jobCategory: profile.jobCategory,
             contactDetails: profile.contactDetails,
             updatedAt: new Date()
@@ -53,6 +55,8 @@ export class ProfileRepositoryPrisma implements IProfileRepository {
             jobStatus: p.jobStatus as JobStatus,
             maritalStatus: p.maritalStatus as MaritalStatus,
             photoUrl: p.photoUrl,
+            coverUrl: p.coverUrl || undefined,
+            photoGallery: p.photoGallery || undefined,
             jobCategory: p.jobCategory,
             contactDetails: p.contactDetails,
             createdAt: p.createdAt,

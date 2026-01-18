@@ -49,6 +49,10 @@ export async function GET(req: NextRequest) {
     const token = await getToken({ req });
     if (!token || !token.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    // List proposals for current user
-    return NextResponse.json({ proposals: [] });
+    const repo = new ProposalRepositoryPrisma();
+    const received = await repo.findByRecipientId(token.sub);
+
+    return NextResponse.json({
+        proposals: received.map(p => p.toObject())
+    });
 }
