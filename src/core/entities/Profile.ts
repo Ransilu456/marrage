@@ -72,4 +72,10 @@ export class Profile {
         Object.assign(this.props, { ...data, updatedAt: new Date() });
         this.validate();
     }
+
+    toJSON() {
+        return {
+            ...this.props
+        };
+    }
 }

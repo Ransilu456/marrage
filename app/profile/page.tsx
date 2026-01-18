@@ -23,13 +23,22 @@ interface ProfileData {
     jobStatus: string;
     maritalStatus: string;
     photoUrl: string;
+    coverUrl?: string;
+    photoGallery?: string;
     jobCategory: string;
     contactDetails: string;
 }
 
 export default function ProfilePage() {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const router = useRouter();
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.push('/auth/login');
+        }
+    }, [status, router]);
+
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('edit-profile');
@@ -46,9 +55,44 @@ export default function ProfilePage() {
         jobStatus: 'EMPLOYED',
         maritalStatus: 'SINGLE',
         photoUrl: '',
+        coverUrl: '',
+        photoGallery: '',
         jobCategory: '',
         contactDetails: '',
     });
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'cover' | 'gallery') => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+
+        try {
+            setSubmitting(true);
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: uploadFormData,
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (type === 'photo') {
+                    setFormData(prev => ({ ...prev, photoUrl: data.url }));
+                } else if (type === 'cover') {
+                    setFormData(prev => ({ ...prev, coverUrl: data.url }));
+                } else if (type === 'gallery') {
+                    const currentGallery = formData.photoGallery ? formData.photoGallery.split(',') : [];
+                    setFormData(prev => ({ ...prev, photoGallery: [...currentGallery, data.url].join(',') }));
+                }
+            } else {
+                setGeneralError('Upload failed: ' + data.error);
+            }
+        } catch (error) {
+            setGeneralError('Upload error');
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     useEffect(() => {
         fetchProfile();
@@ -57,6 +101,12 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
         try {
             const response = await fetch('/api/profile');
+            
+            if (response.status === 401) {
+                router.push('/auth/login');
+                return;
+            }
+
             const data = await response.json();
             if (data.success && data.profile) {
                 setProfile(data.profile);
@@ -69,6 +119,8 @@ export default function ProfilePage() {
                     jobStatus: data.profile.jobStatus ?? 'EMPLOYED',
                     maritalStatus: data.profile.maritalStatus ?? 'SINGLE',
                     photoUrl: data.profile.photoUrl ?? '',
+                    coverUrl: data.profile.coverUrl ?? '',
+                    photoGallery: data.profile.photoGallery ?? '',
                     jobCategory: data.profile.jobCategory ?? '',
                     contactDetails: data.profile.contactDetails ?? '',
                 });
@@ -144,13 +196,17 @@ export default function ProfilePage() {
             {/* 1. Profile Photo & Cover */}
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="h-32 bg-gradient-to-r from-rose-100 to-orange-100 relative">
-                    <button className="absolute top-4 right-4 bg-white/50 backdrop-blur-md hover:bg-white text-slate-600 p-2 rounded-lg text-xs font-medium border border-white/20 transition-all flex items-center gap-2">
-                        <Camera size={14} /> Edit Cover
-                    </button>
+                    {formData.coverUrl && (
+                        <img src={formData.coverUrl} className="absolute inset-0 w-full h-full object-cover" alt="Cover" />
+                    )}
+                    <label className="absolute top-4 right-4 bg-white/50 backdrop-blur-md hover:bg-white text-slate-600 p-2 rounded-lg text-xs font-medium border border-white/20 transition-all flex items-center gap-2 cursor-pointer">
+                        <Camera size={14} /> {submitting ? 'Uploading...' : 'Edit Cover'}
+                        <input type="file" className="hidden" onChange={e => handleFileUpload(e, 'cover')} accept="image/*" />
+                    </label>
                 </div>
                 <div className="px-8 pb-8 relative">
                     <div className="flex flex-col sm:flex-row items-end gap-6 -mt-12">
-                        <div className="relative group">
+                        <label className="relative group cursor-pointer">
                             <div className="w-32 h-32 rounded-2xl border-4 border-white shadow-md overflow-hidden bg-slate-100">
                                 <img
                                     src={formData.photoUrl || "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&h=300"}
@@ -158,11 +214,12 @@ export default function ProfilePage() {
                                     alt="User"
                                 />
                             </div>
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-2xl cursor-pointer backdrop-blur-[2px]">
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-2xl backdrop-blur-[2px]">
                                 <Camera className="text-white" size={24} />
                             </div>
+                            <input type="file" className="hidden" onChange={e => handleFileUpload(e, 'photo')} accept="image/*" />
                             <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 border-2 border-white rounded-full"></div>
-                        </div>
+                        </label>
                         <div className="flex-1 mb-2">
                             <h3 className="font-serif text-2xl text-slate-900 leading-none">{session?.user?.name || 'User'}</h3>
                             <p className="text-slate-500 text-sm mt-1">Member since 2026</p>
@@ -348,16 +405,32 @@ export default function ProfilePage() {
                             <div className="aspect-square rounded-2xl overflow-hidden relative group border-2 border-slate-100 shadow-md">
                                 <img src={formData.photoUrl} className="w-full h-full object-cover" alt="Primary" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 backdrop-blur-[1px]">
-                                    <button className="p-2.5 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors">
+                                    <button onClick={() => setFormData(prev => ({ ...prev, photoUrl: '' }))} className="p-2.5 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors">
                                         <Trash2 size={18} />
                                     </button>
                                 </div>
                             </div>
                         )}
+                        {formData.photoGallery && formData.photoGallery.split(',').filter(url => url).map((url, idx) => (
+                            <div key={idx} className="aspect-square rounded-2xl overflow-hidden relative group border-2 border-slate-100 shadow-md">
+                                <img src={url} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 backdrop-blur-[1px]">
+                                    <button
+                                        onClick={() => {
+                                            const gallery = formData.photoGallery!.split(',').filter((_, i) => i !== idx);
+                                            setFormData(prev => ({ ...prev, photoGallery: gallery.join(',') }));
+                                        }}
+                                        className="p-2.5 bg-white/20 hover:bg-white/40 text-white rounded-full transition-colors"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                         <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 hover:border-rose-300 hover:bg-rose-50 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 text-slate-400 hover:text-rose-500 bg-slate-50/50">
                             <UploadCloud size={32} strokeWidth={1} />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Upload Photo</span>
-                            <input type="file" className="hidden" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">{submitting ? 'Adding...' : 'Add to Gallery'}</span>
+                            <input type="file" className="hidden" onChange={e => handleFileUpload(e, 'gallery')} accept="image/*" />
                         </label>
                     </div>
                     <p className="text-[10px] text-slate-400 font-medium italic mt-4">Upload high-resolution photos to attract 3x more meaningful connections.</p>
@@ -395,7 +468,13 @@ export default function ProfilePage() {
         <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200 border border-slate-100 overflow-hidden min-h-[600px]">
             {profile && (
                 <div className="grid grid-cols-1 lg:grid-cols-5 h-full">
-                    <div className="lg:col-span-2 bg-slate-50 p-8 lg:p-10 border-r border-slate-100">
+                    <div className="lg:col-span-2 bg-slate-50 p-8 lg:p-10 border-r border-slate-100 flex flex-col gap-8">
+                        {profile.coverUrl && (
+                            <div className="h-32 rounded-3xl overflow-hidden relative shadow-sm">
+                                <img src={profile.coverUrl} className="w-full h-full object-cover" alt="Cover" />
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
+                            </div>
+                        )}
                         <div className="aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl relative group">
                             <img
                                 src={profile.photoUrl || "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?auto=format&fit=crop&w=800&q=80"}
@@ -432,7 +511,7 @@ export default function ProfilePage() {
                                 </span>
                                 <span className="w-1 h-1 rounded-full bg-slate-200"></span>
                                 <span className="flex items-center gap-2 text-slate-600 font-medium tracking-tight">
-                                    <Sun size={16} className="text-rose-500" /> {profile.age} Years Old
+                                    <Sun size={16} className="text-rose-500" /> {profile.age} Years Old • {profile.gender}
                                 </span>
                             </div>
                         </div>
@@ -458,6 +537,19 @@ export default function ProfilePage() {
                                 </div >
                             </div >
                         </div >
+
+                        {profile.photoGallery && profile.photoGallery.split(',').filter(url => url).length > 0 && (
+                            <div className="space-y-4 pt-8 border-t border-slate-100">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Moments Captured</h4>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {profile.photoGallery.split(',').filter(url => url).map((url, idx) => (
+                                        <div key={idx} className="aspect-square rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                                            <img src={url} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="pt-8" >
                             <button className="px-10 py-4 bg-slate-900 hover:bg-rose-600 text-white font-black text-xs uppercase tracking-[0.3em] rounded-2xl transition-all shadow-2xl hover:shadow-rose-500/30 flex items-center gap-4 group" >

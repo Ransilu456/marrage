@@ -11,6 +11,8 @@ interface CreateProfileInput {
     jobStatus: string;
     maritalStatus: string;
     photoUrl: string;
+    coverUrl?: string;
+    photoGallery?: string;
     jobCategory: string;
     contactDetails: string;
 }
@@ -32,6 +34,8 @@ export class CreateProfileUseCase {
             jobStatus: input.jobStatus as JobStatus,
             maritalStatus: input.maritalStatus as MaritalStatus,
             photoUrl: input.photoUrl,
+            coverUrl: input.coverUrl,
+            photoGallery: input.photoGallery,
             jobCategory: input.jobCategory,
             contactDetails: input.contactDetails,
             createdAt: new Date(),

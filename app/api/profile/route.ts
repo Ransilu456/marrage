@@ -13,6 +13,8 @@ const profileSchema = z.object({
     jobStatus: z.enum(['EMPLOYED', 'UNEMPLOYED', 'STUDENT', 'RETIRED', 'SELF_EMPLOYED']),
     maritalStatus: z.enum(['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED']),
     photoUrl: z.string().url("Invalid photo URL"),
+    coverUrl: z.string().optional(),
+    photoGallery: z.string().optional(),
     jobCategory: z.string().min(1, "Job Category is required"),
     contactDetails: z.string().min(1, "Contact Details are required"),
 });

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Loader2, ArrowUpRight, X, Inbox, ChevronRight, Check } from 'lucide-react';
 
@@ -19,6 +21,15 @@ interface ProposalData {
 }
 
 export default function ProposalPage() {
+    const { data: session, status } = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.push('/auth/login');
+        }
+    }, [status, router]);
+
     const [proposals, setProposals] = useState<ProposalData[]>([]);
     const [selectedProposal, setSelectedProposal] = useState<ProposalData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -34,6 +45,12 @@ export default function ProposalPage() {
     const fetchProposals = async () => {
         try {
             const response = await fetch('/api/proposals');
+
+            if (response.status === 401) {
+                router.push('/auth/login');
+                return;
+            }
+
             if (response.ok) {
                 const data = await response.json();
                 setProposals(data.proposals || []);
@@ -120,8 +137,8 @@ export default function ProposalPage() {
                                         animate={{ opacity: 1, y: 0 }}
                                         onClick={() => p.answer === 'PENDING' && setSelectedProposal(p)}
                                         className={`group relative p-8 rounded-[2.5rem] border transition-all cursor-pointer ${p.answer === 'PENDING'
-                                                ? 'bg-white hover:bg-rose-50/20 border-slate-100 hover:border-rose-100 shadow-sm hover:shadow-xl hover:shadow-rose-500/5'
-                                                : 'bg-slate-50/50 border-slate-100 opacity-60'
+                                            ? 'bg-white hover:bg-rose-50/20 border-slate-100 hover:border-rose-100 shadow-sm hover:shadow-xl hover:shadow-rose-500/5'
+                                            : 'bg-slate-50/50 border-slate-100 opacity-60'
                                             }`}
                                     >
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -137,7 +154,7 @@ export default function ProposalPage() {
                                                     <h3 className="text-2xl font-serif text-slate-900 leading-tight">Identity Expression</h3>
                                                     <div className="flex items-center gap-2 mt-2">
                                                         <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${p.answer === 'PENDING' ? 'bg-orange-50 text-orange-600' :
-                                                                p.answer === 'YES' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                                                            p.answer === 'YES' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'
                                                             }`}>
                                                             {p.answer}
                                                         </span>
@@ -200,8 +217,8 @@ export default function ProposalPage() {
                                             type="button"
                                             onClick={() => setAnswer('YES')}
                                             className={`p-10 rounded-3xl text-3xl font-serif transition-all border-2 ${answer === 'YES'
-                                                    ? 'bg-rose-600 border-rose-600 text-white shadow-xl shadow-rose-200'
-                                                    : 'bg-white border-slate-100 text-slate-300 hover:border-rose-200 hover:text-rose-400'
+                                                ? 'bg-rose-600 border-rose-600 text-white shadow-xl shadow-rose-200'
+                                                : 'bg-white border-slate-100 text-slate-300 hover:border-rose-200 hover:text-rose-400'
                                                 }`}
                                         >
                                             YES.
@@ -210,8 +227,8 @@ export default function ProposalPage() {
                                             type="button"
                                             onClick={() => setAnswer('NO')}
                                             className={`p-10 rounded-3xl text-3xl font-serif transition-all border-2 ${answer === 'NO'
-                                                    ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-200'
-                                                    : 'bg-white border-slate-100 text-slate-300 hover:border-slate-400 hover:text-slate-600'
+                                                ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-200'
+                                                : 'bg-white border-slate-100 text-slate-300 hover:border-slate-400 hover:text-slate-600'
                                                 }`}
                                         >
                                             NO.

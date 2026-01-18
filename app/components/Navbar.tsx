@@ -17,7 +17,7 @@ export default function Navbar() {
     const navItems = [
         { name: 'Discover', href: '/discover' },
         { name: 'Proposals', href: '/proposals' },
-        { name: 'Messages', href: '/chat' },
+        { name: 'Messages', href: '/messages' },
     ];
 
     return (

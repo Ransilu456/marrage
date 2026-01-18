@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, MapPin, Heart, ChevronLeft,
@@ -23,16 +25,21 @@ interface Profile {
 }
 
 export default function DiscoverPage() {
+    const { data: session, status } = useSession();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (status === 'unauthenticated') {
+            router.push('/auth/login');
+        }
+    }, [status, router]);
+
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({
         jobStatus: '',
         maritalStatus: '',
     });
-
-    useEffect(() => {
-        fetchProfiles();
-    }, [filters]);
 
     const fetchProfiles = async () => {
         setLoading(true);
@@ -42,6 +49,12 @@ export default function DiscoverPage() {
             if (filters.maritalStatus) params.append('maritalStatus', filters.maritalStatus);
 
             const response = await fetch(`/api/profiles?${params.toString()}`);
+
+            if (response.status === 401) {
+                router.push('/auth/login');
+                return;
+            }
+
             const data = await response.json();
             setProfiles(data.profiles || []);
         } catch (error) {
@@ -50,6 +63,12 @@ export default function DiscoverPage() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            fetchProfiles();
+        }
+    }, [filters, status]);
 
     return (
         <div className="bg-slate-50 min-h-screen pt-12">
