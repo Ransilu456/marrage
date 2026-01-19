@@ -4,6 +4,7 @@ import { getToken } from 'next-auth/jwt';
 import { MessageRepositoryPrisma } from '@/src/infrastructure/db/MessageRepositoryPrisma';
 import { Message } from '@/src/core/entities/Message';
 import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
+import { createNotification } from '@/src/utils/notificationHelper';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(
@@ -62,7 +63,7 @@ export async function POST(
 
         const savedMessage = await repo.save(message);
 
-        // Notify via Pusher
+        // Notify via Pusher for real-time chat
         const channelId = [token.sub, receiverId].sort().join('-');
         await triggerMessage(`chat-${channelId}`, 'new-message', {
             id: savedMessage.id,
@@ -73,12 +74,14 @@ export async function POST(
             createdAt: savedMessage.createdAt
         });
 
-        // Also trigger a generic notification for the receiver
-        await triggerMessage(`user-${receiverId}`, 'notification', {
+        // Create persistent notification for the receiver
+        // This will also trigger the 'notification' Pusher event via the helper
+        await createNotification({
+            userId: receiverId,
+            type: 'MESSAGE',
             title: 'New Message',
             message: `${token.name || 'Someone'} sent you a message: "${content.substring(0, 30)}${content.length > 30 ? '...' : ''}"`,
-            type: 'message',
-            senderId: token.sub
+            link: `/chat/${token.sub}`
         });
 
         return NextResponse.json({

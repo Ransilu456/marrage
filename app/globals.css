@@ -4,6 +4,7 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui;
   --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
 
+  /* Original Rose Colors - Kept for compatibility */
   --color-rose-50: #fff1f2;
   --color-rose-100: #ffe4e6;
   --color-rose-200: #fecdd3;
@@ -12,6 +13,55 @@
   --color-rose-600: #e11d48;
   --color-rose-700: #be123c;
 
+  /* Sri Lankan Saffron/Orange Palette */
+  --color-saffron-50: #fff7ed;
+  --color-saffron-100: #ffedd5;
+  --color-saffron-200: #fed7aa;
+  --color-saffron-300: #fdba74;
+  --color-saffron-400: #fb923c;
+  --color-saffron-500: #f97316;
+  --color-saffron-600: #ea580c;
+  --color-saffron-700: #c2410c;
+  --color-saffron-800: #9a3412;
+  --color-saffron-900: #7c2d12;
+
+  /* Sri Lankan Royal Blue Palette */
+  --color-royal-blue-50: #eff6ff;
+  --color-royal-blue-100: #dbeafe;
+  --color-royal-blue-200: #bfdbfe;
+  --color-royal-blue-300: #93c5fd;
+  --color-royal-blue-400: #60a5fa;
+  --color-royal-blue-500: #3b82f6;
+  --color-royal-blue-600: #2563eb;
+  --color-royal-blue-700: #1d4ed8;
+  --color-royal-blue-800: #1e40af;
+  --color-royal-blue-900: #1e3a8a;
+
+  /* Sri Lankan Gold Palette */
+  --color-gold-50: #fefce8;
+  --color-gold-100: #fef9c3;
+  --color-gold-200: #fef08a;
+  --color-gold-300: #fde047;
+  --color-gold-400: #facc15;
+  --color-gold-500: #eab308;
+  --color-gold-600: #ca8a04;
+  --color-gold-700: #a16207;
+  --color-gold-800: #854d0e;
+  --color-gold-900: #713f12;
+
+  /* Sri Lankan Emerald Palette */
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-300: #6ee7b7;
+  --color-emerald-400: #34d399;
+  --color-emerald-500: #10b981;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+
+  /* Original Slate Colors */
   --color-slate-50: #f8fafc;
   --color-slate-100: #f1f5f9;
   --color-slate-200: #e2e8f0;
@@ -23,8 +73,11 @@
   --color-slate-800: #1e293b;
   --color-slate-900: #0f172a;
 
-  --shadow-premium: 0 10px 30px -10px rgba(225, 29, 72, 0.1);
-  --shadow-premium-lg: 0 20px 50px -12px rgba(15, 23, 42, 0.08);
+  /* Sri Lankan-inspired Shadows */
+  --shadow-premium: 0 10px 30px -10px rgba(234, 88, 12, 0.15);
+  --shadow-premium-lg: 0 20px 50px -12px rgba(234, 88, 12, 0.12);
+  --shadow-gold: 0 8px 24px -8px rgba(202, 138, 4, 0.3);
+  --shadow-royal: 0 8px 24px -8px rgba(37, 99, 235, 0.2);
 }
 
 :root {
@@ -34,12 +87,30 @@
   /* slate-700 */
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ... existing styles ... */
+
+.aurora-blob {
+  position: absolute;
+  filter: blur(80px);
+  border-radius: 50%;
+  animation: aurora-flow 25s infinite ease-in-out;
+  /* Slowed down for performance */
+  will-change: transform, opacity;
+  /* Optimization */
+  transform: translateZ(0);
+  /* Hardware acceleration trigger */
 }
 
 h1,
@@ -124,16 +195,110 @@ input[type=range]::-webkit-slider-runnable-track {
   box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
 }
 
+/* Sri Lankan Cultural Animations */
 @keyframes aurora-flow {
-  0% { transform: translateY(0) scale(1); opacity: 0.1; }
-  50% { transform: translateY(-5%) scale(1.1); opacity: 0.2; }
-  100% { transform: translateY(0) scale(1); opacity: 0.1; }
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.12;
+  }
+
+  50% {
+    transform: translateY(-5%) scale(1.1);
+    opacity: 0.25;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.12;
+  }
+}
+
+@keyframes lotus-bloom {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes gold-shimmer {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes peacock-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .aurora-bg {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at 50% -20%, #fff1f2 0%, #ffffff 100%);
+  background: radial-gradient(circle at 50% -20%, #ffedd5 0%, #eff6ff 50%, #ffffff 100%);
   z-index: -1;
   overflow: hidden;
 }
@@ -146,6 +311,41 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 
 .grid-pattern {
-  background-image: radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
+  background-image: radial-gradient(#bfdbfe 0.5px, transparent 0.5px);
   background-size: 24px 24px;
+}
+
+/* Sri Lankan Traditional Patterns */
+.lotus-pattern {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(234, 88, 12, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(202, 138, 4, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.02) 0%, transparent 50%);
+  background-size: 200px 200px, 250px 250px, 180px 180px;
+  animation: lotus-bloom 8s infinite ease-in-out;
+}
+
+.peacock-gradient {
+  background: linear-gradient(135deg,
+      rgba(37, 99, 235, 0.1) 0%,
+      rgba(16, 185, 129, 0.1) 25%,
+      rgba(202, 138, 4, 0.1) 50%,
+      rgba(234, 88, 12, 0.1) 75%,
+      rgba(37, 99, 235, 0.1) 100%);
+  background-size: 200% 200%;
+  animation: peacock-flow 15s ease infinite;
+}
+
+.batik-pattern {
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(202, 138, 4, 0.02) 10px, rgba(202, 138, 4, 0.02) 20px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(234, 88, 12, 0.02) 10px, rgba(234, 88, 12, 0.02) 20px);
+}
+
+.ornamental-border {
+  border: 2px solid transparent;
+  background:
+    linear-gradient(white, white) padding-box,
+    linear-gradient(135deg, #ca8a04, #ea580c, #2563eb) border-box;
+  border-radius: 2rem;
 }

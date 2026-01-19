@@ -49,4 +49,5 @@ export interface IProposalRepository {
      * Find proposals by recipient and answer status
      */
     findByRecipientAndStatus(recipientId: string, status: string): Promise<Proposal[]>;
+    delete(id: string): Promise<void>;
 }

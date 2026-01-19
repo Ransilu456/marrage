@@ -13,6 +13,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const jobStatus = searchParams.get('jobStatus') || undefined;
     const maritalStatus = searchParams.get('maritalStatus') || undefined;
+    const jobCategory = searchParams.get('jobCategory') || undefined;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '12');
 
     try {
         const repo = new ProfileRepositoryPrisma();
@@ -20,17 +23,22 @@ export async function GET(req: NextRequest) {
 
         const useCase = new SearchProfilesUseCase(repo);
 
-        const profiles = await useCase.execute({
+        const { profiles, total } = await useCase.execute({
             excludeUserId: token.sub,
             jobStatus,
             maritalStatus,
+            jobCategory,
+            page,
+            limit,
             currentUserJobCategory: currentUserProfile?.jobCategory
         });
 
         // Map to DTO to hide sensitive info if needed
-        // For now, return full profile props
         return NextResponse.json({
             success: true,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
             profiles: profiles.map(p => ({
                 id: p.id,
                 userId: p.userId,

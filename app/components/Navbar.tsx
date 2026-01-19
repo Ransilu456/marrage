@@ -6,6 +6,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Menu, X, HeartHandshake } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
 
 export default function Navbar() {
     const { data: session } = useSession();
@@ -52,6 +53,7 @@ export default function Navbar() {
 
                     {session ? (
                         <div className="flex items-center gap-6">
+                            <NotificationBell />
                             <Link
                                 href="/profile"
                                 className={`text-sm font-medium transition-colors hover:text-rose-600 ${pathname === '/profile' ? 'text-slate-900' : 'text-slate-500'

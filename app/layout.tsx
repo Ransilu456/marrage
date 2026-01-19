@@ -3,6 +3,8 @@ import { Inter, Playfair_Display } from "next/font/google";
 import AuthProvider from "./providers";
 import Navbar from "./components/Navbar";
 import ProfileGuard from "./components/ProfileGuard";
+import { NotificationProvider } from "./components/NotificationProvider";
+import ProposalAcceptedModal from "./components/modals/ProposalAcceptedModal";
 
 import "./globals.css";
 
@@ -32,12 +34,15 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} antialiased selection:bg-rose-100 selection:text-rose-900 bg-slate-50`}
       >
         <AuthProvider>
-          <ProfileGuard>
-            <Navbar />
-            <main className="min-h-screen pt-16">
-              {children}
-            </main>
-          </ProfileGuard>
+          <NotificationProvider>
+            <ProposalAcceptedModal />
+            <ProfileGuard>
+              <Navbar />
+              <main className="min-h-screen pt-16">
+                {children}
+              </main>
+            </ProfileGuard>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

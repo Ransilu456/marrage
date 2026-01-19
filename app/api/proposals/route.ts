@@ -6,6 +6,7 @@ import { SendProposalUseCase } from '@/src/core/use-cases/SendProposal';
 import { ProposalRepositoryPrisma } from '@/src/infrastructure/db/ProposalRepositoryPrisma';
 import { ProfileRepositoryPrisma } from '@/src/infrastructure/db/ProfileRepositoryPrisma';
 import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
+import { createNotification } from '@/src/utils/notificationHelper';
 
 const createSchema = z.object({
     recipientId: z.string(),
@@ -36,12 +37,13 @@ export async function POST(req: NextRequest) {
 
         const proposal = await useCase.execute(token.sub, result.data.recipientId, result.data.message);
 
-        // Trigger notification for the recipient
-        await triggerMessage(`user-${result.data.recipientId}`, 'notification', {
+        // Create notification in database and trigger real-time notification
+        await createNotification({
+            userId: result.data.recipientId,
+            type: 'PROPOSAL',
             title: 'New Proposal',
             message: `${token.name || 'Someone'} sent you a marriage proposal!`,
-            type: 'proposal',
-            id: proposal.id
+            link: `/proposals`,
         });
 
         return NextResponse.json({ success: true, proposal: proposal.toObject() });

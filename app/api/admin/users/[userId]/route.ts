@@ -2,14 +2,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { prisma } from '@/src/infrastructure/db/prismaClient';
-import { GET as authOptions } from '../../../auth/[...nextauth]/route';
+import { authOptions } from "@/src/lib/auth";
 import { UserRole } from '@/src/core/entities/User';
 
 export async function DELETE(
     req: NextRequest,
     { params }: { params: Promise<{ userId: string }> }
 ) {
-    const session = await getServerSession(authOptions as any) as any;
+    const session = await getServerSession(authOptions);
     const { userId } = await params;
 
     if (!session || !session.user || session.user.role !== UserRole.ADMIN) {

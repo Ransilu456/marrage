@@ -50,16 +50,31 @@ export class ProfileRepositoryPrisma implements IProfileRepository {
         return found.map(p => this.toDomain(p as any));
     }
 
-    async findFiltered(filters: { jobStatus?: string; maritalStatus?: string }): Promise<Profile[]> {
+    async findFiltered(filters: { jobStatus?: string; maritalStatus?: string; jobCategory?: string; page?: number; limit?: number }): Promise<{ profiles: Profile[]; total: number }> {
         const where: any = {};
         if (filters.jobStatus) where.jobStatus = filters.jobStatus;
         if (filters.maritalStatus) where.maritalStatus = filters.maritalStatus;
+        if (filters.jobCategory) where.jobCategory = filters.jobCategory;
 
-        const found = await prisma.profile.findMany({
-            where,
-            include: { user: { select: { name: true } } }
-        });
-        return found.map(p => this.toDomain(p as any));
+        const page = filters.page || 1;
+        const limit = filters.limit || 20;
+        const skip = (page - 1) * limit;
+
+        const [profiles, total] = await Promise.all([
+            prisma.profile.findMany({
+                where,
+                include: { user: { select: { name: true } } },
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.profile.count({ where })
+        ]);
+
+        return {
+            profiles: profiles.map(p => this.toDomain(p as any)),
+            total
+        };
     }
 
     private toDomain(p: PrismaProfile & { user?: { name: string | null } }): Profile {

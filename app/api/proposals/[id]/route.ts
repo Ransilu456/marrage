@@ -4,6 +4,7 @@ import { getToken } from 'next-auth/jwt';
 import { ProposalRepositoryPrisma } from '@/src/infrastructure/db/ProposalRepositoryPrisma';
 import { ProposalAnswer } from '@/src/core/entities/Proposal';
 import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
+import { createNotification } from '@/src/utils/notificationHelper';
 import { z } from 'zod';
 
 const updateSchema = z.object({
@@ -66,17 +67,52 @@ export async function PATCH(
         await repo.save(proposal);
 
         // Notify the proposer that their proposal has been answered
-        await triggerMessage(`user-${proposal.proposerId}`, 'notification', {
+        await createNotification({
+            userId: proposal.proposerId,
+            type: result.data.answer === 'YES' ? 'PROPOSAL_ACCEPTED' : 'PROPOSAL_REJECTED',
             title: 'Proposal Update',
             message: `${token.name || 'Someone'} has ${result.data.answer === 'YES' ? 'accepted' : 'declined'} your proposal.`,
-            type: 'proposal_answer',
-            id: proposal.id,
-            answer: result.data.answer
+            link: `/proposals`
         });
+
+        // Trigger specific event for the accepted modal
+        if (result.data.answer === 'YES') {
+            await triggerMessage(`user-${proposal.proposerId}`, 'proposal-accepted', {
+                proposalId: proposal.id,
+                partnerName: token.name || 'Your Partner',
+                partnerImage: token.picture || '',
+            });
+        }
 
         return NextResponse.json({ success: true, proposal: proposal.toObject() });
     } catch (error) {
         console.error('Proposal update error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const { id } = await params;
+    const token = await getToken({ req });
+    if (!token || !token.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const repo = new ProposalRepositoryPrisma();
+    const proposal = await repo.findById(id);
+
+    if (!proposal) return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+
+    // Allow deleting if user is the proposer (Cancel) or recipient (Delete/Reject)
+    if (proposal.proposerId !== token.sub && proposal.recipientId !== token.sub) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    try {
+        await repo.delete(id);
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Proposal delete error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

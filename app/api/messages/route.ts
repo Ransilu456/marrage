@@ -6,6 +6,7 @@ import { Message } from '@/src/core/entities/Message';
 import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
 import { prisma } from '@/src/infrastructure/db/prismaClient';
 import { Message as PrismaMessage, User, Profile } from '@prisma/client';
+import { createNotification } from '@/src/utils/notificationHelper';
 
 export async function POST(req: NextRequest) {
     const token = await getToken({ req });
@@ -29,8 +30,7 @@ export async function POST(req: NextRequest) {
     // Save
     await repo.save(message);
 
-    // Trigger Real-time event
-    // Channel: chat-{receiverId}, Event: new-message
+    // Trigger Real-time event for chat
     await triggerMessage(`chat-${receiverId}`, 'new-message', {
         id: message.id,
         content: message.content,
@@ -38,12 +38,13 @@ export async function POST(req: NextRequest) {
         createdAt: message.createdAt
     });
 
-    // Also trigger a generic notification for the receiver
-    await triggerMessage(`user-${receiverId}`, 'notification', {
+    // Create notification in database and trigger real-time notification
+    await createNotification({
+        userId: receiverId,
+        type: 'MESSAGE',
         title: 'New Message',
-        message: `${token.name || 'Someone'} sent you a message: "${content.substring(0, 30)}${content.length > 30 ? '...' : ''}"`,
-        type: 'message',
-        senderId: token.sub
+        message: `${token.name || 'Someone'} sent you a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+        link: `/chat/${token.sub}`,
     });
 
     return NextResponse.json({ success: true, message });

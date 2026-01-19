@@ -83,6 +83,12 @@ export class ProposalRepositoryPrisma implements IProposalRepository {
         return proposals.map(p => this.toDomain(p));
     }
 
+    async delete(id: string): Promise<void> {
+        await prisma.proposal.delete({
+            where: { id }
+        });
+    }
+
     private toDomain(prismaProposal: any): Proposal {
         const p = Proposal.fromPersistence({
             id: prismaProposal.id,
@@ -95,7 +101,9 @@ export class ProposalRepositoryPrisma implements IProposalRepository {
         });
 
         // Attach raw relations for API use (violates strict domain but easier for DTOs)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (p as any).props.proposer = prismaProposal.proposer;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (p as any).props.recipient = prismaProposal.recipient;
 
         return p;

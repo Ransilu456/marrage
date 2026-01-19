@@ -40,7 +40,28 @@ model User {
   favorites   Favorite[] @relation("UserFavorites")
   favoritedBy Favorite[] @relation("UserFavoritedBy")
 
+  // Notifications
+  notifications Notification[]
+
   @@map("users")
+}
+
+// Notification model for in-app and browser notifications
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String // MESSAGE, PROPOSAL, PROPOSAL_ACCEPTED, PROPOSAL_REJECTED, FAVORITE
+  title     String
+  message   String
+  link      String? // Navigation link when clicked
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
 }
 
 // Favorite connection

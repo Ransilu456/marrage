@@ -5,6 +5,9 @@ import { Profile } from '../entities/Profile';
 export interface SearchFilters {
     jobStatus?: string;
     maritalStatus?: string;
+    jobCategory?: string;
+    page?: number;
+    limit?: number;
     minAge?: number;
     maxAge?: number;
     excludeUserId?: string; // Don't show self
@@ -14,33 +17,42 @@ export interface SearchFilters {
 export class SearchProfilesUseCase {
     constructor(private profileRepository: IProfileRepository) { }
 
-    async execute(filters: SearchFilters): Promise<Profile[]> {
+    async execute(filters: SearchFilters): Promise<{ profiles: Profile[]; total: number }> {
         // Optimized: Perform basic filtering at the database level
-        const allProfiles = await this.profileRepository.findFiltered({
+        const { profiles: allProfiles, total } = await this.profileRepository.findFiltered({
             jobStatus: filters.jobStatus,
-            maritalStatus: filters.maritalStatus
+            maritalStatus: filters.maritalStatus,
+            jobCategory: filters.jobCategory,
+            page: filters.page,
+            limit: filters.limit
         });
+
+        // If we have complex logic like synergy scoring that requires loading ALL profiles, 
+        // we can't fully rely on DB pagination yet. 
+        // BUT for MVP/Performance, we should rely on DB filtering first. 
+        // The synergy score sorting only works on the fetched page currently, which is a trade-off.
 
         const filtered = allProfiles.filter(profile => {
             if (filters.excludeUserId && profile.userId === filters.excludeUserId) return false;
+            // Age filter logic might need to move to DB if we want accurate pagination
             if (filters.minAge && profile.age < filters.minAge) return false;
             if (filters.maxAge && profile.age > filters.maxAge) return false;
 
             return true;
         });
 
-        // Professional Synergy Algorithm
+        // Professional Synergy Algorithm (Applied to current page only)
         if (filters.currentUserJobCategory) {
             const myJob = filters.currentUserJobCategory.toLowerCase();
 
-            return filtered.sort((a, b) => {
+            filtered.sort((a, b) => {
                 const scoreA = this.calculateSynergyScore(myJob, a.jobCategory.toLowerCase());
                 const scoreB = this.calculateSynergyScore(myJob, b.jobCategory.toLowerCase());
                 return scoreB - scoreA;
             });
         }
 
-        return filtered;
+        return { profiles: filtered, total };
     }
 
     private calculateSynergyScore(myJob: string, theirJob: string): number {

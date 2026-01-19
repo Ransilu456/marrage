@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Your Online Footprint</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root {
+            --bg: #020617;
+            --card: #0f172a;
+            --line: #1e293b;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --warn: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: linear-gradient(180deg, #020617, #020617);
+            color: var(--text);
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, .5);
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: clamp(22px, 4vw, 30px);
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--line);
+        }
+
+        .label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .value {
+            font-size: 13px;
+            text-align: right;
+            word-break: break-word;
+            max-width: 60%;
+        }
+
+        .notice {
+            margin-top: 16px;
+            padding: 14px;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, .1);
+            border: 1px solid rgba(245, 158, 11, .4);
+            color: #fde68a;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .actions {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Desktop layout */
+        @media (min-width: 700px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .value {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h1>You are an EDIOT DANUDDARA</h1>
+            <div class="subtitle">
+                Do not harm people you will always get your return
+            </div>
+
+            <div class="grid">
+                <div class="row"><span class="label">Device Type</span><span class="value" id="device"></span></div>
+                <div class="row"><span class="label">Operating System</span><span class="value" id="os"></span></div>
+                <div class="row"><span class="label">Browser</span><span class="value" id="browser"></span></div>
+                <div class="row"><span class="label">Public IP</span><span class="value" id="ip">Loading…</span></div>
+                <div class="row"><span class="label">Approx. Location</span><span class="value" id="loc">Loading…</span>
+                </div>
+                <div class="row"><span class="label">Screen</span><span class="value" id="screen"></span></div>
+                <div class="row"><span class="label">Touch Support</span><span class="value" id="touch"></span></div>
+                <div class="row"><span class="label">CPU Cores</span><span class="value" id="cores"></span></div>
+                <div class="row"><span class="label">Memory</span><span class="value" id="ram"></span></div>
+                <div class="row"><span class="label">Network</span><span class="value" id="net"></span></div>
+                <div class="row"><span class="label">Battery</span><span class="value" id="battery">Unavailable</span>
+                </div>
+                <div class="row"><span class="label">Timezone</span><span class="value" id="tz"></span></div>
+                <div class="row"><span class="label">Language</span><span class="value" id="lang"></span></div>
+            </div>
+
+            <div class="notice">
+                Never ever harm anyone
+            </div>
+
+            <div class="actions">
+                <button onclick="location.reload()">Refresh</button>
+                <button onclick="copyData()">Copy Details</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ua = navigator.userAgent;
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+
+        function getOS() {
+            if (/android/i.test(ua)) return "Android";
+            if (/iphone|ipad|ipod/i.test(ua)) return "iOS";
+            return navigator.platform || "Unknown";
+        }
+
+        document.getElementById("device").innerText = isMobile ? "Mobile" : "Desktop";
+        document.getElementById("os").innerText = getOS();
+        document.getElementById("browser").innerText = ua;
+        document.getElementById("screen").innerText = `${screen.width} × ${screen.height}`;
+        document.getElementById("touch").innerText =
+            ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? "Yes" : "No";
+        document.getElementById("cores").innerText = navigator.hardwareConcurrency || "Unknown";
+        document.getElementById("ram").innerText = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Unknown";
+        document.getElementById("tz").innerText = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById("lang").innerText = navigator.language;
+        document.getElementById("net").innerText =
+            navigator.connection?.effectiveType || "Unknown";
+
+        if ("getBattery" in navigator) {
+            navigator.getBattery().then(b =>
+                document.getElementById("battery").innerText =
+                Math.round(b.level * 100) + "%"
+            );
+        }
+
+        async function loadIP() {
+            const ipEl = document.getElementById("ip");
+            const locEl = document.getElementById("loc");
+
+            const services = [
+                "https://api.ipify.org?format=json",
+                "https://ipv4.icanhazip.com/?format=json",
+                "https://ipapi.co/json/"
+            ];
+
+            for (const url of services) {
+                try {
+                    const res = await fetch(url, { cache: "no-store" });
+                    const data = await res.json();
+
+                    const ip =
+                        data.ip ||
+                        data.IPv4 ||
+                        data.ip_address;
+
+                    if (ip) {
+                        ipEl.innerText = ip;
+
+                        if (data.city || data.country_name) {
+                            locEl.innerText =
+                                [data.city, data.region, data.country_name]
+                                    .filter(Boolean)
+                                    .join(", ");
+                        } else {
+                            locEl.innerText = "Approximate (IP-based)";
+                        }
+                        return;
+                    }
+                } catch (_) { }
+            }
+
+            ipEl.innerText = "Why I should show it to you";
+            locEl.innerText = "Why I should show it to you";
+        }
+
+        document.addEventListener("DOMContentLoaded", loadIP);
+
+
+        // IP + Location
+        fetch("https://api.ipify.org?format=json")
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById("ip").innerText = d.ip;
+                return fetch(`https://ipapi.co/${d.ip}/json/`);
+            })
+            .then(r => r.json())
+            .then(l => {
+                document.getElementById("loc").innerText =
+                    [l.city, l.region, l.country_name].filter(Boolean).join(", ");
+            })
+            .catch(() => {
+                document.getElementById("ip").innerText = "Why I should show it to you";
+                document.getElementById("loc").innerText = "Why I should show it to you";
+            });
+
+        function copyData() {
+            const text = Array.from(document.querySelectorAll(".row"))
+                .map(r => r.innerText.replace(/\s+/g, " "))
+                .join("\n");
+            navigator.clipboard.writeText(text).catch(() => { });
+        }
+    </script>
+
+</body>
+
+</html>
