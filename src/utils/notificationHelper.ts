@@ -1,16 +1,16 @@
 import { prisma } from '@/src/infrastructure/db/prismaClient';
-import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
+import { notificationBus } from '@/src/infrastructure/events/NotificationBus';
 
 export interface NotificationData {
     userId: string;
-    type: 'MESSAGE' | 'PROPOSAL' | 'PROPOSAL_ACCEPTED' | 'PROPOSAL_REJECTED' | 'FAVORITE';
+    type: 'MESSAGE' | 'PROPOSAL' | 'PROPOSAL_ACCEPTED' | 'PROPOSAL_REJECTED' | 'FAVORITE' | 'INTEREST' | 'SYSTEM';
     title: string;
     message: string;
     link?: string;
 }
 
 /**
- * Create a notification and trigger real-time update via Pusher
+ * Create a notification and trigger real-time update via internal NotificationBus (SSE)
  */
 export async function createNotification(data: NotificationData) {
     try {
@@ -25,14 +25,11 @@ export async function createNotification(data: NotificationData) {
             },
         });
 
-        // 2. Trigger Pusher event for real-time notification
-        await triggerMessage(`user-${data.userId}`, 'notification', {
+        // 2. Trigger real-time event via internal bus
+        notificationBus.emitNotification(data.userId, {
+            ...notification,
             id: notification.id,
-            type: notification.type,
-            title: notification.title,
-            message: notification.message,
-            link: notification.link,
-            createdAt: notification.createdAt,
+            createdAt: notification.createdAt
         });
 
         return notification;

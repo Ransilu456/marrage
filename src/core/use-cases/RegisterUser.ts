@@ -1,6 +1,6 @@
 
 import { IUserRepository } from '../interfaces/UserRepository';
-import { User, UserProps, UserRole } from '../entities/User';
+import { User, UserProps, UserRole, AccountStatus } from '../entities/User';
 import bcrypt from 'bcryptjs';
 
 interface RegisterUserInput {
@@ -29,6 +29,12 @@ export class RegisterUserUseCase {
             passwordHash: passwordHash,
             name: input.name,
             role: UserRole.USER,
+            emailVerified: false,
+            phoneVerified: false,
+            photoVerified: false,
+            idVerified: false,
+            trustScore: 0,
+            accountStatus: AccountStatus.LIMITED,
             createdAt: new Date(),
             updatedAt: new Date()
         });

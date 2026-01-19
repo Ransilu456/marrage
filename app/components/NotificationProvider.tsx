@@ -2,7 +2,9 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
-import Pusher from 'pusher-js';
+// Pusher removed as requested
+// Pusher removed as requested
+
 
 interface Notification {
     id: string;
@@ -68,60 +70,43 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         }
     }, [session]);
 
-    // Subscribe to Pusher for real-time notifications
+    // Real-time notifications via SSE
     useEffect(() => {
         if (!session?.user) return;
 
-        const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || '', {
-            cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
-            authEndpoint: '/api/pusher/auth',
-        });
+        const eventSource = new EventSource('/api/notifications/stream');
 
-        // @ts-ignore
-        const channel = pusher.subscribe(`user-${session.user.id}`);
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
 
-        channel.bind('notification', (data: any) => {
-            // Add to notifications list
-            setNotifications(prev => [data, ...prev]);
+            if (data.type === 'CONNECTED') {
+                console.log('Real-time notifications connected');
+                return;
+            }
+
+            // New notification received
+            setNotifications(prev => [data, ...prev].slice(0, 50));
             setUnreadCount(prev => prev + 1);
 
-            // Show browser notification
-            if (typeof window !== 'undefined' && Notification.permission === 'granted') {
-                const notification = new Notification(data.title, {
+            // Trigger browser notification if supported
+            if (Notification.permission === 'granted') {
+                new Notification(data.title, {
                     body: data.message,
-                    icon: '/favicon.ico',
-                    badge: '/favicon.ico',
-                    tag: data.id,
+                    icon: '/favicon.ico' // Ensure valid icon path
                 });
-
-                // Play notification sound
-                try {
-                    const audio = new Audio('/notification.mp3');
-                    audio.volume = 0.5;
-                    audio.play().catch(err => console.log('Audio play failed:', err));
-                } catch (error) {
-                    console.log('Audio not available');
-                }
-
-                // Navigate on click
-                notification.onclick = () => {
-                    window.focus();
-                    if (data.link) {
-                        window.location.href = data.link;
-                    }
-                    notification.close();
-                };
-
-                // Auto-close after 5 seconds
-                setTimeout(() => notification.close(), 5000);
             }
-        });
+        };
+
+        eventSource.onerror = (error) => {
+            console.error('SSE Error:', error);
+            eventSource.close();
+        };
 
         return () => {
-            // @ts-ignore
-            pusher.unsubscribe(`user-${session.user.id}`);
+            eventSource.close();
         };
     }, [session]);
+
 
     const markAsRead = async (notificationId: string) => {
         try {

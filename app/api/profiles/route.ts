@@ -1,60 +1,54 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { SearchProfilesUseCase } from '@/src/core/use-cases/SearchProfiles';
+import { SearchProfilesUseCase } from '@/src/core/use-cases/SearchProfilesUseCase';
 import { ProfileRepositoryPrisma } from '@/src/infrastructure/db/ProfileRepositoryPrisma';
 
 export async function GET(req: NextRequest) {
     const token = await getToken({ req });
-    if (!token || !token.sub) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!token || !token.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { searchParams } = new URL(req.url);
-    const jobStatus = searchParams.get('jobStatus') || undefined;
-    const maritalStatus = searchParams.get('maritalStatus') || undefined;
-    const jobCategory = searchParams.get('jobCategory') || undefined;
+    const gender = searchParams.get('gender') || undefined;
+    const minAge = searchParams.get('minAge') ? parseInt(searchParams.get('minAge')!) : undefined;
+    const maxAge = searchParams.get('maxAge') ? parseInt(searchParams.get('maxAge')!) : undefined;
+    const religion = searchParams.get('religion') || undefined;
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
 
     try {
         const repo = new ProfileRepositoryPrisma();
-        const currentUserProfile = await repo.findByUserId(token.sub);
-
         const useCase = new SearchProfilesUseCase(repo);
 
-        const { profiles, total } = await useCase.execute({
-            excludeUserId: token.sub,
-            jobStatus,
-            maritalStatus,
-            jobCategory,
+        const scoredResults = await useCase.execute({
+            userId: token.sub,
+            gender,
+            minAge,
+            maxAge,
+            religion,
             page,
-            limit,
-            currentUserJobCategory: currentUserProfile?.jobCategory
+            limit
         });
 
-        // Map to DTO to hide sensitive info if needed
+        const profiles = scoredResults.map(res => ({
+            ...res.profile.toJSON(),
+            matchScore: res.score,
+            matchReasons: res.reasons
+        }));
+
+        // Calculate total pages (this is a rough estimate since we don't have total count)
+        const totalPages = profiles.length === limit ? page + 1 : page;
+
         return NextResponse.json({
             success: true,
-            total,
-            page,
-            totalPages: Math.ceil(total / limit),
-            profiles: profiles.map(p => ({
-                id: p.id,
-                userId: p.userId,
-                name: p.name || (p.gender === 'MALE' ? 'Gentleman' : 'Lady'),
-                age: p.age,
-                gender: p.gender,
-                bio: p.bio,
-                jobStatus: p.jobStatus,
-                jobCategory: p.jobCategory,
-                maritalStatus: p.maritalStatus,
-                location: p.location,
-                photoUrl: p.photoUrl,
-            }))
+            profiles,
+            totalPages,
+            currentPage: page
         });
     } catch (error) {
         console.error('Search error:', error);
+        if (error instanceof Error && error.message.includes("Searcher profile not found")) {
+            return NextResponse.json({ error: 'Please complete your profile first' }, { status: 403 });
+        }
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }

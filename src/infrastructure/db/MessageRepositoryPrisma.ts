@@ -12,11 +12,19 @@ export class MessageRepositoryPrisma implements IMessageRepository {
                 content: message.content,
                 senderId: message.senderId,
                 receiverId: message.receiverId,
+                matchId: message.matchId,
                 read: message.read,
                 createdAt: message.createdAt
             }
         });
         return this.toDomain(saved);
+    }
+
+    async findById(id: string): Promise<Message | null> {
+        const found = await prisma.message.findUnique({
+            where: { id }
+        });
+        return found ? this.toDomain(found) : null;
     }
 
     async getConversation(user1Id: string, user2Id: string): Promise<Message[]> {
@@ -39,12 +47,36 @@ export class MessageRepositoryPrisma implements IMessageRepository {
         });
     }
 
+    async countRecentForUser(userId: string, hours: number): Promise<number> {
+        const since = new Date();
+        since.setHours(since.getHours() - hours);
+
+        return await prisma.message.count({
+            where: {
+                senderId: userId,
+                createdAt: {
+                    gte: since
+                }
+            }
+        });
+    }
+
+    async findByMatchId(matchId: string): Promise<Message[]> {
+        const messages = await prisma.message.findMany({
+            where: { matchId },
+            orderBy: { createdAt: 'asc' }
+        });
+
+        return messages.map(m => this.toDomain(m));
+    }
+
     private toDomain(p: PrismaMessage): Message {
         return Message.create({
             id: p.id,
             content: p.content,
             senderId: p.senderId,
             receiverId: p.receiverId,
+            matchId: p.matchId,
             read: p.read,
             createdAt: p.createdAt
         });

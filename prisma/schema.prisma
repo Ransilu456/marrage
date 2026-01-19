@@ -23,10 +23,25 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Verification & Trust
+  emailVerified   Boolean   @default(false)
+  phoneVerified   Boolean   @default(false)
+  photoVerified   Boolean   @default(false)
+  idVerified      Boolean   @default(false)
+  trustScore      Int       @default(0)
+  accountStatus   String    @default("LIMITED") // LIMITED, VERIFIED, BANNED, ENGAGED
+  verificationOTP String?
+  otpExpires      DateTime?
+
+  // Family Management
+  managedById String?
+  managedBy   User?   @relation("Manager", fields: [managedById], references: [id])
+  manages     User[]  @relation("Manager")
+
   // Relations
   profile           Profile?
-  sentProposals     Proposal[] @relation("SentProposals")
-  receivedProposals Proposal[] @relation("ReceivedProposals")
+  sentInterests     Interest[] @relation("SentInterests")
+  receivedInterests Interest[] @relation("ReceivedInterests")
 
   // Matching and Social
   sentMatches     Match[] @relation("Sender")
@@ -43,14 +58,54 @@ model User {
   // Notifications
   notifications Notification[]
 
+  // Verification Logs
+  verificationLogs VerificationLog[]
+
+  blocksSent     Block[] @relation("Blocker")
+  blocksReceived Block[] @relation("Blocked")
+
+  identityDocuments IdentityDocument[]
+
   @@map("users")
+}
+
+// Interest Request System (Step 5) - Canonical source of truth
+model Interest {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, WITHDRAWN
+  message    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sender   User @relation("SentInterests", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedInterests", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
+  @@index([senderId, createdAt])
+  @@map("interests")
+}
+
+// Verification Log System (Step 3)
+model VerificationLog {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String // EMAIL, PHONE, PHOTO, ID
+  status    String // PENDING, VERIFIED, REJECTED
+  details   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("verification_logs")
 }
 
 // Notification model for in-app and browser notifications
 model Notification {
   id        String   @id @default(uuid())
   userId    String
-  type      String // MESSAGE, PROPOSAL, PROPOSAL_ACCEPTED, PROPOSAL_REJECTED, FAVORITE
+  type      String // MESSAGE, PROPOSAL, PROPOSAL_ACCEPTED, PROPOSAL_REJECTED, FAVORITE, INTEREST, SYSTEM
   title     String
   message   String
   link      String? // Navigation link when clicked
@@ -79,30 +134,56 @@ model Favorite {
   @@map("favorites")
 }
 
-// Detailed User Profile for Discovery
+// Detailed User Profile for Discovery (Step 2)
 model Profile {
   id     String @id @default(uuid())
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Vital Stats
-  dateOfBirth DateTime?
-  age         Int
-  gender      String
-  bio         String
-  location    String
+  // Logic & Completion
+  completeness Int @default(0) // 0-100 percentage
 
-  // Filters defined by user
-  jobStatus     String // e.g., "EMPLOYED", "UNEMPLOYED", "STUDENT"
-  maritalStatus String // e.g., "SINGLE", "WIDOWED", "DIVORCED"
+  // Vital Stats (Step 2.1)
+  dateOfBirth  DateTime?
+  age          Int
+  gender       String
+  height       Float? // In cm
+  religion     String?
+  caste        String?
+  motherTongue String?
+  bio          String
+  location     String
 
-  jobCategory    String // New field for specific job category
-  contactDetails String // New field for user contact info
+  // Lifestyle (Step 2.2)
+  jobStatus      String // e.g., "EMPLOYED", "UNEMPLOYED", "STUDENT"
+  maritalStatus  String // e.g., "SINGLE", "WIDOWED", "DIVORCED"
+  education      String?
+  profession     String?
+  incomeRange    String?
+  diet           String?
+  smoking        String?
+  drinking       String?
+  jobCategory    String?
+  contactDetails String?
+
+  // Family Details (Step 2.3)
+  fatherOccupation String?
+  motherOccupation String?
+  siblings         String?
+  familyType       String? // TRADITIONAL, MODERN
+
+  // Partner Preferences (Step 2.4)
+  prefAgeMin    Int?
+  prefAgeMax    Int?
+  prefHeightMin Float?
+  prefReligion  String?
+  prefEducation String?
+  prefLifestyle String?
 
   // Media
   photoUrl     String
-  coverUrl     String? // New field for cover photo
-  photoGallery String? // New field for multiple photos (comma-separated)
+  coverUrl     String?
+  photoGallery String? // Comma-separated
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,20 +191,20 @@ model Profile {
   @@map("profiles")
 }
 
-// Match connection between two users
+// Match connection between two users (Step 8) - Result of successful Interest
 model Match {
-  id         String @id @default(uuid())
-  senderId   String
-  receiverId String
-  status     String @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  id      String @id @default(uuid())
+  userAId String
+  userBId String
 
-  sender   User @relation("Sender", fields: [senderId], references: [id])
-  receiver User @relation("Receiver", fields: [receiverId], references: [id])
+  userA User @relation("Sender", fields: [userAId], references: [id])
+  userB User @relation("Receiver", fields: [userBId], references: [id])
+
+  messages Message[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  @@unique([senderId, receiverId])
+  @@unique([userAId, userBId])
   @@map("matches")
 }
 
@@ -133,32 +214,45 @@ model Message {
   content    String
   senderId   String
   receiverId String
+  matchId    String
 
-  sender   User @relation("SentMessages", fields: [senderId], references: [id])
-  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender   User  @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User  @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  match    Match @relation(fields: [matchId], references: [id])
 
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
+  @@index([matchId, createdAt])
   @@map("messages")
 }
 
-// Updated Proposal Model
-model Proposal {
-  id String @id @default(uuid())
-
-  // Link to registered users
-  proposerId  String
-  recipientId String
-
-  proposer  User @relation("SentProposals", fields: [proposerId], references: [id])
-  recipient User @relation("ReceivedProposals", fields: [recipientId], references: [id])
-
-  answer  String  @default("PENDING") // YES, NO, PENDING
-  message String?
-
+model Block {
+  id        String   @id @default(uuid())
+  blockerId String
+  blockedId String
+  reason    String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  @@map("proposals")
+  blocker User @relation("Blocker", fields: [blockerId], references: [id])
+  blocked User @relation("Blocked", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId])
+  @@map("blocks")
+}
+
+// Identity Verification Documents (Step 3)
+model IdentityDocument {
+  id              String   @id @default(uuid())
+  userId          String
+  type            String // PASSPORT, AADHAAR, DRIVING_LICENSE, etc.
+  fileUrl         String // Internal path or secure URL
+  status          String   @default("PENDING") // PENDING, VERIFIED, REJECTED
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("identity_documents")
 }

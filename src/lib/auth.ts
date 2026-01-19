@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { UserRepositoryPrisma } from "@/src/infrastructure/db/UserRepositoryPrisma";
 import bcrypt from "bcryptjs";
+import { UserRole } from "@/src/core/entities/User";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -17,12 +18,16 @@ export const authOptions: NextAuthOptions = {
                 const userRepo = new UserRepositoryPrisma();
                 const user = await userRepo.findByEmail(credentials.email);
 
-                if (user && bcrypt.compareSync(credentials.password, user.passwordHash)) {
+                if (!user) return null;
+
+                const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
+
+                if (isValidPassword) {
                     return {
                         id: user.id,
                         name: user.name,
                         email: user.email,
-                        role: user.role, // Pass role
+                        role: user.role,
                     };
                 }
                 return null;
@@ -48,7 +53,7 @@ export const authOptions: NextAuthOptions = {
                 (session.user as any).id = token.id;
                 (session.user as any).role = token.role;
             }
-            return session;
+            return session as any;
         }
     }
 };

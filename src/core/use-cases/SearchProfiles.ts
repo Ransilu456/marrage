@@ -46,8 +46,8 @@ export class SearchProfilesUseCase {
             const myJob = filters.currentUserJobCategory.toLowerCase();
 
             filtered.sort((a, b) => {
-                const scoreA = this.calculateSynergyScore(myJob, a.jobCategory.toLowerCase());
-                const scoreB = this.calculateSynergyScore(myJob, b.jobCategory.toLowerCase());
+                const scoreA = a.jobCategory ? this.calculateSynergyScore(myJob, a.jobCategory.toLowerCase()) : 0;
+                const scoreB = b.jobCategory ? this.calculateSynergyScore(myJob, b.jobCategory.toLowerCase()) : 0;
                 return scoreB - scoreA;
             });
         }

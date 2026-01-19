@@ -19,6 +19,7 @@ export default function Navbar() {
         { name: 'Discover', href: '/discover' },
         { name: 'Proposals', href: '/proposals' },
         { name: 'Messages', href: '/messages' },
+        { name: 'Family', href: '/family' },
     ] : [];
 
     return (
@@ -86,9 +87,12 @@ export default function Navbar() {
                     )}
                 </div>
 
-                {/* Mobile Menu Button */}
                 <div className="md:hidden flex items-center">
-                    <button onClick={toggleMenu} className="text-slate-600">
+                    <button
+                        onClick={toggleMenu}
+                        className="text-slate-600"
+                        aria-label={isOpen ? "Close menu" : "Open menu"}
+                    >
                         {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                     </button>
                 </div>

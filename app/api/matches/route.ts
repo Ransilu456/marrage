@@ -11,31 +11,31 @@ export async function GET(req: NextRequest) {
         const matches = await prisma.match.findMany({
             where: {
                 OR: [
-                    { senderId: token.sub, status: 'ACCEPTED' },
-                    { receiverId: token.sub, status: 'ACCEPTED' }
+                    { userAId: token.sub },
+                    { userBId: token.sub }
                 ]
             },
             include: {
-                sender: {
+                userA: {
                     include: { profile: true }
                 },
-                receiver: {
+                userB: {
                     include: { profile: true }
                 }
             },
-            orderBy: { updatedAt: 'desc' }
+            orderBy: { createdAt: 'desc' }
         });
 
         // Map to a cleaner structure for the frontend
         const result = matches.map(match => {
-            const otherUser = match.senderId === token.sub ? match.receiver : match.sender;
+            const otherUser = match.userAId === token.sub ? match.userB : match.userA;
             return {
                 id: match.id,
                 userId: otherUser.id,
                 name: otherUser.name || 'Aura Soul',
                 photoUrl: otherUser.profile?.photoUrl || '',
                 location: otherUser.profile?.location || 'Unknown',
-                updatedAt: match.updatedAt
+                createdAt: match.createdAt
             };
         });
 

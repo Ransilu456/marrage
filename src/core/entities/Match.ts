@@ -1,40 +1,43 @@
 
-export enum MatchStatus {
-    PENDING = 'PENDING',
-    ACCEPTED = 'ACCEPTED',
-    REJECTED = 'REJECTED'
-}
-
 export interface MatchProps {
     id: string;
-    senderId: string;
-    receiverId: string;
-    status: MatchStatus;
+    userAId: string;
+    userBId: string;
     createdAt: Date;
-    updatedAt: Date;
 }
 
 export class Match {
-    constructor(private props: MatchProps) { }
+    constructor(private props: MatchProps) {
+        this.validate();
+    }
 
-    static create(props: MatchProps): Match {
-        return new Match(props);
+    private validate(): void {
+        if (!this.props.userAId) throw new Error("User A ID is required");
+        if (!this.props.userBId) throw new Error("User B ID is required");
+        if (this.props.userAId === this.props.userBId) {
+            throw new Error("A match cannot be with the same user");
+        }
+    }
+
+    static create(props: { userAId: string; userBId: string }): Match {
+        // Ensure consistent ordering of IDs to avoid duplicate matches (userA < userB)
+        const [id1, id2] = [props.userAId, props.userBId].sort();
+
+        return new Match({
+            id: crypto.randomUUID(),
+            userAId: id1,
+            userBId: id2,
+            createdAt: new Date()
+        });
     }
 
     // Getters
     get id(): string { return this.props.id; }
-    get senderId(): string { return this.props.senderId; }
-    get receiverId(): string { return this.props.receiverId; }
-    get status(): MatchStatus { return this.props.status; }
+    get userAId(): string { return this.props.userAId; }
+    get userBId(): string { return this.props.userBId; }
+    get createdAt(): Date { return this.props.createdAt; }
 
-    // Logic
-    accept(): void {
-        this.props.status = MatchStatus.ACCEPTED;
-        this.props.updatedAt = new Date();
-    }
-
-    reject(): void {
-        this.props.status = MatchStatus.REJECTED;
-        this.props.updatedAt = new Date();
+    toJSON() {
+        return { ...this.props };
     }
 }

@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Heart, Loader2, MapPin, BadgeCheck, Users, Sun,
-    MessageCircle, HeartHandshake, ArrowLeft, Share2
+    MessageCircle, HeartHandshake, ArrowLeft, Share2,
+    Briefcase, GraduationCap, Info, Utensils, Cigarette,
+    Baby, Home, Search as SearchIcon, ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,17 +17,32 @@ interface ProfileData {
     userId: string;
     name: string;
     age: number;
-    dateOfBirth: string;
     gender: string;
+    religion?: string;
+    caste?: string;
+    motherTongue?: string;
+    height?: number;
     bio: string;
     location: string;
     jobStatus: string;
     maritalStatus: string;
     photoUrl: string;
-    coverUrl?: string;
-    photoGallery?: string;
-    jobCategory: string;
-    contactDetails: string;
+    education?: string;
+    profession?: string;
+    incomeRange?: string;
+    diet?: string;
+    smoking?: string;
+    drinking?: string;
+    fatherOccupation?: string;
+    motherOccupation?: string;
+    siblings?: string;
+    familyType?: string;
+    prefAgeMin?: number;
+    prefAgeMax?: number;
+    prefHeightMin?: number;
+    prefReligion?: string;
+    prefEducation?: string;
+    prefLifestyle?: string;
 }
 
 export default function UserProfilePage() {
@@ -37,15 +54,10 @@ export default function UserProfilePage() {
     const [profile, setProfile] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [isFavorite, setIsFavorite] = useState(false);
-    const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-    const [proposalMessage, setProposalMessage] = useState("");
+    const [isInterestModalOpen, setIsInterestModalOpen] = useState(false);
+    const [interestMessage, setInterestMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
-
-    useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.push('/auth/login');
-        }
-    }, [status, router]);
+    const [hasInterest, setHasInterest] = useState(false);
 
     useEffect(() => {
         if (userId && status === 'authenticated') {
@@ -57,12 +69,10 @@ export default function UserProfilePage() {
     const fetchProfile = async () => {
         try {
             const response = await fetch(`/api/profiles/${userId}`);
-
             if (response.status === 404) {
                 router.push('/discover');
                 return;
             }
-
             const data = await response.json();
             if (data.success && data.profile) {
                 setProfile(data.profile);
@@ -87,257 +97,246 @@ export default function UserProfilePage() {
     };
 
     const toggleFavorite = async () => {
-        try {
-            const response = await fetch('/api/favorites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ favoritedId: userId }),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setIsFavorite(data.isFavorited);
-            }
-        } catch (error) {
-            console.error('Error toggling favorite:', error);
+        const response = await fetch('/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ favoritedId: userId }),
+        });
+        if (response.ok) {
+            const data = await response.json();
+            setIsFavorite(data.isFavorited);
         }
     };
 
-    const handleSendProposal = async () => {
+    const handleSendInterest = async () => {
         setIsSending(true);
         try {
-            const res = await fetch('/api/proposals', {
+            const res = await fetch('/api/interests', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    recipientId: userId,
-                    message: proposalMessage
+                    receiverId: userId,
+                    message: interestMessage
                 })
             });
-
             if (res.ok) {
-                setIsProposalModalOpen(false);
-                setProposalMessage("");
-                // Show success message
+                setIsInterestModalOpen(false);
+                setInterestMessage("");
+                setHasInterest(true);
             }
         } catch (error) {
-            console.error('Error sending proposal:', error);
+            console.error('Error sending interest:', error);
         } finally {
             setIsSending(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-[80vh] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
-            </div>
-        );
-    }
-
-    if (!profile) {
-        return (
-            <div className="min-h-[80vh] flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <h2 className="text-2xl font-serif text-slate-900">Profile not found</h2>
-                    <Link href="/discover" className="text-orange-600 hover:underline">
-                        Return to Discover
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-rose-500" /></div>;
+    if (!profile) return null;
 
     return (
-        <div className="bg-gradient-to-br from-orange-50 via-blue-50 to-amber-50 min-h-screen">
-            {/* Aurora Background */}
-            <div className="fixed inset-0 -z-10 overflow-hidden">
-                <div className="absolute w-[500px] h-[500px] bg-gradient-to-br from-orange-200 to-amber-200 rounded-full blur-3xl opacity-20 -top-48 -left-48 animate-pulse" />
-                <div className="absolute w-[400px] h-[400px] bg-gradient-to-br from-blue-200 to-blue-100 rounded-full blur-3xl opacity-20 -bottom-48 -right-48 animate-pulse" style={{ animationDelay: '1s' }} />
-                <div className="absolute inset-0 lotus-pattern opacity-10" />
-            </div>
+        <div className="bg-slate-50 min-h-screen pb-20">
+            {/* Header / Hero Area */}
+            <div className="bg-white border-b border-slate-100 pt-24 pb-12">
+                <div className="max-w-6xl mx-auto px-6">
+                    <Link href="/discover" className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-rose-500 transition-all uppercase tracking-widest mb-8">
+                        <ArrowLeft size={14} /> Back to Discover
+                    </Link>
 
-            <main className="max-w-6xl mx-auto px-6 py-12 space-y-8">
-                {/* Back Button */}
-                <Link
-                    href="/discover"
-                    className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-orange-600 transition-colors"
-                >
-                    <ArrowLeft size={16} />
-                    Back to Discover
-                </Link>
-
-                {/* Profile Card */}
-                <div className="bg-white rounded-[3rem] shadow-2xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
-                    <div className="grid grid-cols-1 lg:grid-cols-5">
-                        {/* Left Side - Image */}
-                        <div className="lg:col-span-2 bg-gradient-to-br from-slate-50 to-slate-100 p-8 lg:p-12 border-r border-slate-100 flex flex-col gap-8">
-                            {profile.coverUrl && (
-                                <div className="h-32 rounded-3xl overflow-hidden relative shadow-lg">
-                                    <img src={profile.coverUrl} className="w-full h-full object-cover" alt="Cover" />
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
-                                </div>
-                            )}
-                            <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl relative group">
-                                <img
-                                    src={profile.photoUrl || "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?auto=format&fit=crop&w=800&q=80"}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                    alt={profile.name}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
-                                <div className="absolute bottom-8 left-8 text-white">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <h3 className="text-3xl font-serif tracking-tight">{profile.name}</h3>
-                                        <BadgeCheck className="text-amber-400" size={24} />
-                                    </div>
-                                    <p className="text-white/80 text-sm font-medium tracking-wide flex items-center gap-1.5">
-                                        <MapPin size={14} className="text-white/60" /> {profile.location}
-                                    </p>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                        {/* Profile Image Column */}
+                        <div className="lg:col-span-4">
+                            <div className="aspect-[3/4] rounded-[3rem] overflow-hidden shadow-2xl shadow-rose-900/10 border-4 border-white relative">
+                                <img src={profile.photoUrl || "/placeholder.jpg"} className="w-full h-full object-cover" alt={profile.name} />
+                                <div className="absolute top-6 right-6 flex flex-col gap-2">
+                                    <button
+                                        onClick={toggleFavorite}
+                                        className={`p-3 rounded-full backdrop-blur-md transition-all ${isFavorite ? 'bg-rose-500 text-white' : 'bg-white/20 text-white hover:bg-white/40'}`}
+                                    >
+                                        <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Right Side - Info */}
-                        <div className="lg:col-span-3 p-10 lg:p-16 space-y-10 flex flex-col justify-center">
-                            <div className="space-y-6">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200 text-orange-700 text-xs font-black uppercase tracking-wider">
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                    </span>
-                                    Verified Member
+                        {/* Info Column */}
+                        <div className="lg:col-span-8 space-y-8">
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-5xl font-serif text-slate-900 font-bold">{profile.name}, {profile.age}</h1>
+                                    <BadgeCheck className="text-blue-500 fill-blue-50" size={32} />
                                 </div>
-                                <h3 className="text-5xl font-serif text-slate-900 tracking-tighter leading-tight italic">
-                                    {profile.jobCategory}
-                                </h3>
-                                <div className="flex items-center gap-6 text-sm flex-wrap">
-                                    <span className="flex items-center gap-2 text-slate-600 font-medium">
-                                        <Users size={16} className="text-orange-500" /> {profile.maritalStatus}
-                                    </span>
-                                    <span className="w-1 h-1 rounded-full bg-slate-200"></span>
-                                    <span className="flex items-center gap-2 text-slate-600 font-medium">
-                                        <Sun size={16} className="text-orange-500" /> {profile.age} Years • {profile.gender}
-                                    </span>
+                                <p className="text-slate-500 text-lg italic leading-relaxed max-w-2xl">"{profile.bio}"</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div className="bg-rose-50/50 p-4 rounded-3xl border border-rose-100/50">
+                                    <span className="block text-[10px] uppercase tracking-widest text-rose-400 font-bold mb-1">Religion</span>
+                                    <span className="text-slate-900 font-bold">{profile.religion || 'Not specified'}</span>
+                                </div>
+                                <div className="bg-blue-50/50 p-4 rounded-3xl border border-blue-100/50">
+                                    <span className="block text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-1">Height</span>
+                                    <span className="text-slate-900 font-bold">{profile.height} cm</span>
+                                </div>
+                                <div className="bg-amber-50/50 p-4 rounded-3xl border border-amber-100/50">
+                                    <span className="block text-[10px] uppercase tracking-widest text-amber-500 font-bold mb-1">Status</span>
+                                    <span className="text-slate-900 font-bold">{profile.maritalStatus?.toLowerCase() || 'Single'}</span>
+                                </div>
+                                <div className="bg-emerald-50/50 p-4 rounded-3xl border border-emerald-100/50">
+                                    <span className="block text-[10px] uppercase tracking-widest text-emerald-500 font-bold mb-1">Location</span>
+                                    <span className="text-slate-900 font-bold">{profile.location}</span>
                                 </div>
                             </div>
 
-                            <div className="h-px bg-gradient-to-r from-amber-200 via-orange-200 to-transparent w-32" />
-
-                            <div className="space-y-8">
-                                <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Their Story</h4>
-                                    <p className="text-xl text-slate-600 leading-relaxed font-light italic">
-                                        "{profile.bio}"
-                                    </p>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-8">
-                                    <div className="space-y-2">
-                                        <span className="block text-[10px] uppercase tracking-[0.2em] text-orange-500 font-black">Profession</span>
-                                        <span className="text-slate-800 font-serif text-lg tracking-tight">{profile.jobStatus}</span>
-                                    </div>
-                                    {profile.contactDetails && (
-                                        <div className="space-y-2">
-                                            <span className="block text-[10px] uppercase tracking-[0.2em] text-orange-500 font-black">Connect</span>
-                                            <span className="text-slate-800 font-serif text-lg tracking-tight">{profile.contactDetails}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Photo Gallery */}
-                            {profile.photoGallery && profile.photoGallery.split(',').filter(url => url).length > 0 && (
-                                <div className="space-y-4 pt-8 border-t border-slate-100">
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Moments Captured</h4>
-                                    <div className="grid grid-cols-3 gap-4">
-                                        {profile.photoGallery.split(',').filter(url => url).map((url, idx) => (
-                                            <div key={idx} className="aspect-square rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow">
-                                                <img src={url} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-3 pt-8">
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => setIsInterestModalOpen(true)}
+                                    disabled={hasInterest}
+                                    className="flex-1 bg-rose-600 text-white px-8 py-5 rounded-[2rem] font-bold shadow-xl shadow-rose-200 hover:bg-rose-700 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:grayscale"
+                                >
+                                    <HeartHandshake /> {hasInterest ? 'Interest Sent' : 'Send Interest'}
+                                </button>
                                 <Link
                                     href={`/chat/${userId}`}
-                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg shadow-blue-500/30 border border-blue-400/50"
+                                    className="px-8 py-5 rounded-[2rem] bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all flex items-center gap-3"
                                 >
-                                    <MessageCircle size={16} />
-                                    Start Chat
+                                    <MessageCircle /> Chat
                                 </Link>
-                                <button
-                                    onClick={() => setIsProposalModalOpen(true)}
-                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider hover:from-emerald-700 hover:to-emerald-800 transition-all shadow-lg shadow-emerald-500/30 border border-emerald-400/50"
-                                >
-                                    <HeartHandshake size={16} />
-                                    Send Proposal
-                                </button>
-                                <button
-                                    onClick={toggleFavorite}
-                                    className={`flex items-center justify-center w-14 h-14 rounded-2xl transition-all shadow-lg ${isFavorite
-                                            ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-orange-500/30 border border-amber-400/50'
-                                            : 'bg-white border-2 border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-600'
-                                        }`}
-                                >
-                                    <Heart size={20} className={isFavorite ? 'fill-current' : ''} />
-                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
 
-            {/* Proposal Modal */}
-            {isProposalModalOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center px-6">
-                    <div
-                        onClick={() => !isSending && setIsProposalModalOpen(false)}
-                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-xl"
-                    />
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white w-full max-w-lg rounded-[3.5rem] p-12 relative shadow-2xl space-y-8 z-10"
-                    >
-                        <div className="text-center space-y-3">
-                            <div className="w-16 h-16 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <HeartHandshake className="text-orange-600" size={32} />
+            {/* Detailed Stats */}
+            <div className="max-w-6xl mx-auto px-6 mt-12 grid grid-cols-1 md:grid-cols-3 gap-12">
+                {/* Column 1: Life & Career */}
+                <div className="space-y-8">
+                    <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                        <Briefcase size={14} /> Lifestyle & Career
+                    </h3>
+                    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase">Education</label>
+                            <p className="text-slate-900 font-medium">{profile.education || 'Not specified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase">Profession</label>
+                            <p className="text-slate-900 font-medium">{profile.profession || 'Not specified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase">Income Range</label>
+                            <p className="text-slate-900 font-medium">{profile.incomeRange || 'Confidential'}</p>
+                        </div>
+                        <div className="flex gap-4 pt-4">
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full">
+                                <Utensils size={12} /> {profile.diet || 'Any'}
                             </div>
-                            <h3 className="text-4xl font-serif text-slate-900">
-                                Sacred <span className="italic bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">Proposal</span>
-                            </h3>
-                            <p className="text-sm text-slate-400 font-light">Share your heart's intention with {profile.name}</p>
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full">
+                                <Cigarette size={12} /> {profile.smoking || 'Non-Smoker'}
+                            </div>
                         </div>
-
-                        <textarea
-                            value={proposalMessage}
-                            onChange={(e) => setProposalMessage(e.target.value)}
-                            placeholder="Write something that reflects your soul..."
-                            disabled={isSending}
-                            className="w-full h-44 bg-gradient-to-br from-amber-50/50 to-orange-50/50 border border-amber-200/50 rounded-[2.5rem] p-8 text-sm font-light text-slate-900 outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-300 transition-all resize-none"
-                        />
-
-                        <div className="flex flex-col gap-4">
-                            <button
-                                onClick={handleSendProposal}
-                                disabled={!proposalMessage.trim() || isSending}
-                                className="w-full py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-amber-600 hover:to-orange-600 transition-all shadow-xl disabled:opacity-20"
-                            >
-                                {isSending ? 'Sending...' : 'Send Proposal'}
-                            </button>
-                            <button
-                                onClick={() => setIsProposalModalOpen(false)}
-                                disabled={isSending}
-                                className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 hover:text-orange-600 transition-all"
-                            >
-                                Maybe Later
-                            </button>
-                        </div>
-                    </motion.div>
+                    </div>
                 </div>
-            )}
+
+                {/* Column 2: Family Background */}
+                <div className="space-y-8">
+                    <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                        <Home size={14} /> Family Background
+                    </h3>
+                    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 space-y-6">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase">Family Type</label>
+                            <p className="text-slate-900 font-medium">{profile.familyType || 'Not specified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase">Father's Occupation</label>
+                            <p className="text-slate-900 font-medium">{profile.fatherOccupation || 'Retired/Independent'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase">Mother's Occupation</label>
+                            <p className="text-slate-900 font-medium">{profile.motherOccupation || 'Homemaker'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-slate-300 uppercase">Siblings</label>
+                            <p className="text-slate-900 font-medium">{profile.siblings || 'None'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Column 3: Partner Preferences */}
+                <div className="space-y-8">
+                    <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                        <SearchIcon size={14} /> Partner Preferences
+                    </h3>
+                    <div className="bg-gradient-to-br from-rose-50 to-white rounded-[2.5rem] p-8 shadow-sm border border-rose-100 space-y-6">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-rose-300 uppercase">Age Range</label>
+                            <p className="text-slate-900 font-medium">{profile.prefAgeMin} - {profile.prefAgeMax} years</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-rose-300 uppercase">Preferred Religion</label>
+                            <p className="text-slate-900 font-medium">{profile.prefReligion || 'Any'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-rose-300 uppercase">Education Level</label>
+                            <p className="text-slate-900 font-medium">{profile.prefEducation || 'Highly Qualified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-rose-300 uppercase">Lifestyle Expectation</label>
+                            <p className="text-slate-900 font-medium italic">"{profile.prefLifestyle || 'Looking for traditional values with a modern touch.'}"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Interest Modal */}
+            <AnimatePresence>
+                {isInterestModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => !isSending && setIsInterestModalOpen(false)}
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="relative bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl space-y-6"
+                        >
+                            <div className="text-center space-y-2">
+                                <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <HeartHandshake className="text-rose-600" size={40} />
+                                </div>
+                                <h3 className="text-3xl font-serif text-slate-900 font-bold">Express Interest</h3>
+                                <p className="text-sm text-slate-400">Send an interest request to {profile.name} to see if there's a match.</p>
+                            </div>
+                            <textarea
+                                value={interestMessage}
+                                onChange={(e) => setInterestMessage(e.target.value)}
+                                className="w-full h-40 bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-rose-500 rounded-3xl p-6 text-sm outline-none transition-all resize-none"
+                                placeholder="Add a personal touch to your interest..."
+                                disabled={isSending}
+                            />
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={handleSendInterest}
+                                    disabled={isSending || !interestMessage.trim()}
+                                    className="w-full py-5 rounded-2xl bg-rose-600 text-white font-bold shadow-xl hover:bg-rose-700 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
+                                >
+                                    {isSending ? <Loader2 className="animate-spin" size={20} /> : (
+                                        <>Send Sacred Interest <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" /></>
+                                    )}
+                                </button>
+                                <button onClick={() => setIsInterestModalOpen(false)} className="py-2 text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-600">Cancel</button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

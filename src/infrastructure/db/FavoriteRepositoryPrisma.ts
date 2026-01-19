@@ -30,18 +30,24 @@ export class FavoriteRepositoryPrisma implements FavoriteRepository {
             });
 
             if (mutual) {
-                // It's a match!
-                await prisma.match.upsert({
+                // It's a match! Create a match record
+                const existingMatch = await prisma.match.findFirst({
                     where: {
-                        senderId_receiverId: { senderId: userId, receiverId: favoritedId }
-                    },
-                    update: { status: 'ACCEPTED' },
-                    create: {
-                        senderId: userId,
-                        receiverId: favoritedId,
-                        status: 'ACCEPTED'
+                        OR: [
+                            { userAId: userId, userBId: favoritedId },
+                            { userAId: favoritedId, userBId: userId }
+                        ]
                     }
                 });
+
+                if (!existingMatch) {
+                    await prisma.match.create({
+                        data: {
+                            userAId: userId,
+                            userBId: favoritedId
+                        }
+                    });
+                }
             }
 
             return { isFavorited: true };

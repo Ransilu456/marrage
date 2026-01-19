@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { ProposalRepositoryPrisma } from '@/src/infrastructure/db/ProposalRepositoryPrisma';
 import { ProposalAnswer } from '@/src/core/entities/Proposal';
-import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
+// Pusher removed
+
 import { createNotification } from '@/src/utils/notificationHelper';
 import { z } from 'zod';
 
@@ -75,14 +76,8 @@ export async function PATCH(
             link: `/proposals`
         });
 
-        // Trigger specific event for the accepted modal
-        if (result.data.answer === 'YES') {
-            await triggerMessage(`user-${proposal.proposerId}`, 'proposal-accepted', {
-                proposalId: proposal.id,
-                partnerName: token.name || 'Your Partner',
-                partnerImage: token.picture || '',
-            });
-        }
+        // Real-time accepted notification will be handled by client-side polling
+
 
         return NextResponse.json({ success: true, proposal: proposal.toObject() });
     } catch (error) {

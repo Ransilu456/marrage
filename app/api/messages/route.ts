@@ -1,101 +1,95 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { MessageRepositoryPrisma } from '@/src/infrastructure/db/MessageRepositoryPrisma';
-import { Message } from '@/src/core/entities/Message';
-import { triggerMessage } from '@/src/infrastructure/realtime/pusher';
-import { prisma } from '@/src/infrastructure/db/prismaClient';
-import { Message as PrismaMessage, User, Profile } from '@prisma/client';
+import { MatchRepositoryPrisma } from '@/src/infrastructure/db/MatchRepositoryPrisma';
+import { ProfileRepositoryPrisma } from '@/src/infrastructure/db/ProfileRepositoryPrisma';
+import { SendMessageUseCase } from '@/src/core/use-cases/SendMessageUseCase';
 import { createNotification } from '@/src/utils/notificationHelper';
 
 export async function POST(req: NextRequest) {
     const token = await getToken({ req });
     if (!token || !token.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const body = await req.json();
-    const { receiverId, content } = body;
+    try {
+        const body = await req.json();
+        const { matchId, receiverId, content } = body;
 
-    const repo = new MessageRepositoryPrisma();
+        const messageRepo = new MessageRepositoryPrisma();
+        const matchRepo = new MatchRepositoryPrisma();
+        const useCase = new SendMessageUseCase(messageRepo, matchRepo);
 
-    // Create Message Entity
-    const message = Message.create({
-        id: crypto.randomUUID(),
-        senderId: token.sub,
-        receiverId,
-        content,
-        read: false,
-        createdAt: new Date()
-    });
+        let finalMatchId = matchId;
 
-    // Save
-    await repo.save(message);
+        // If frontend doesn't provide matchId, try to find it via users
+        if (!finalMatchId && receiverId) {
+            const match = await matchRepo.findByUsers(token.sub, receiverId);
+            if (!match) {
+                return NextResponse.json({ error: 'No active match found between users' }, { status: 403 });
+            }
+            finalMatchId = match.id;
+        }
 
-    // Trigger Real-time event for chat
-    await triggerMessage(`chat-${receiverId}`, 'new-message', {
-        id: message.id,
-        content: message.content,
-        senderId: message.senderId,
-        createdAt: message.createdAt
-    });
+        if (!finalMatchId) {
+            return NextResponse.json({ error: 'matchId or receiverId is required' }, { status: 400 });
+        }
 
-    // Create notification in database and trigger real-time notification
-    await createNotification({
-        userId: receiverId,
-        type: 'MESSAGE',
-        title: 'New Message',
-        message: `${token.name || 'Someone'} sent you a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
-        link: `/chat/${token.sub}`,
-    });
+        const message = await useCase.execute({
+            matchId: finalMatchId,
+            senderId: token.sub,
+            content
+        });
 
-    return NextResponse.json({ success: true, message });
+        // 5. Notify recipient
+        await createNotification({
+            userId: message.receiverId,
+            type: 'MESSAGE',
+            title: 'New Message',
+            message: `${token.name || 'A user'} sent you a message`,
+            link: `/chat/${finalMatchId}`,
+        });
+
+        return NextResponse.json({ success: true, message: message.toJSON() });
+    } catch (error) {
+        console.error('Message send error:', error);
+        if (error instanceof Error) {
+            return NextResponse.json({ error: error.message }, { status: 400 });
+        }
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
 }
 
 export async function GET(req: NextRequest) {
     const token = await getToken({ req });
     if (!token || !token.sub) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const currentUserId = token.sub;
-
     try {
-        // Fetch all messages involving the current user
-        const messages = await prisma.message.findMany({
-            where: {
-                OR: [
-                    { senderId: currentUserId },
-                    { receiverId: currentUserId }
-                ]
-            },
-            orderBy: { createdAt: 'desc' },
-            include: {
-                sender: { select: { id: true, name: true, profile: { select: { photoUrl: true, location: true } } } },
-                receiver: { select: { id: true, name: true, profile: { select: { photoUrl: true, location: true } } } }
-            }
-        });
+        const matchRepo = new MatchRepositoryPrisma();
+        const messageRepo = new MessageRepositoryPrisma();
+        const profileRepo = new ProfileRepositoryPrisma();
 
-        // Group by conversation
-        const sessionsMap = new Map();
+        // Find all matches for the user
+        const matches = await matchRepo.findAllForUser(token.sub);
 
-        messages.forEach((msg: any) => {
-            const partner = msg.senderId === currentUserId ? msg.receiver : msg.sender;
-            if (!sessionsMap.has(partner.id)) {
-                sessionsMap.set(partner.id, {
-                    id: partner.id,
-                    participant: {
-                        id: partner.id,
-                        name: partner.profile?.name || partner.name || 'Aura Match',
-                        photoUrl: partner.profile?.photoUrl || '',
-                        location: partner.profile?.location || 'Unknown'
-                    },
-                    lastMessage: {
-                        text: msg.content,
-                        createdAt: msg.createdAt,
-                        isRead: msg.receiverId === currentUserId ? msg.read : true
-                    }
-                });
-            }
-        });
+        // For each match, get the last message and partner info
+        const conversations = await Promise.all(matches.map(async (match) => {
+            const partnerId = match.userAId === token.sub ? match.userBId : match.userAId;
+            const partnerProfile = await profileRepo.findByUserId(partnerId);
 
-        return NextResponse.json({ success: true, conversations: Array.from(sessionsMap.values()) });
+            // Note: Ideally, we'd have a repository method that joins these
+            const msgs = await messageRepo.findByMatchId(match.id);
+            const lastMsg = msgs[msgs.length - 1];
+
+            return {
+                matchId: match.id,
+                partnerId: partnerId,
+                partnerName: partnerProfile?.toJSON().gender === 'MALE' ? 'Gentleman' : 'Lady', // Fallback or use User name if available
+                partnerPhoto: partnerProfile?.toJSON().photoUrl || '',
+                lastMessage: lastMsg ? lastMsg.toJSON() : null,
+                createdAt: match.createdAt
+            };
+        }));
+
+        return NextResponse.json({ success: true, conversations });
     } catch (error) {
         console.error('Get conversations error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

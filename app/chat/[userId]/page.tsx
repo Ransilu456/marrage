@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Send, Paperclip, ChevronLeft, Loader2, MoreHorizontal, Check, Sun } from "lucide-react";
-import Pusher from "pusher-js";
+// Pusher removed as requested
+
 
 interface Message {
     id: string;
@@ -50,27 +51,17 @@ export default function ChatPage() {
             fetchRecipientProfile();
             fetchProposalStatus();
 
-            if (process.env.NEXT_PUBLIC_PUSHER_KEY) {
-                const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-                    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-                });
+            // Poll for new messages every 3 seconds
+            const interval = setInterval(() => {
+                fetchMessages();
+            }, 3000);
 
-                const channelId = [session.user.id, userId as string].sort().join('-');
-                const channel = pusher.subscribe(`chat-${channelId}`);
-
-                channel.bind('new-message', (data: Message) => {
-                    setMessages(prev => {
-                        if (prev.find(m => m.id === data.id)) return prev;
-                        return [...prev, data];
-                    });
-                });
-
-                return () => {
-                    pusher.unsubscribe(`chat-${channelId}`);
-                };
-            }
+            return () => {
+                clearInterval(interval);
+            };
         }
     }, [session, userId]);
+
 
     useEffect(() => {
         scrollToBottom();
@@ -382,8 +373,8 @@ export default function ChatPage() {
                                             </button>
                                         ) : (
                                             <div className={`w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-center border ${proposalStatus === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                                    proposalStatus === 'YES' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                        'bg-rose-50 text-rose-600 border-rose-100'
+                                                proposalStatus === 'YES' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                    'bg-rose-50 text-rose-600 border-rose-100'
                                                 }`}>
                                                 Proposal {proposalStatus}
                                             </div>
