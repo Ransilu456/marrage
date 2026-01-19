@@ -41,7 +41,7 @@ export interface ProfileProps {
     diet?: string;
     smoking?: string;
     drinking?: string;
-    jobCategory?: string;
+    jobCategory: string;
     contactDetails?: string;
 
     // Family Details

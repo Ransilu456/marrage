@@ -33,6 +33,10 @@ model User {
   verificationOTP String?
   otpExpires      DateTime?
 
+  // Proposals
+  proposalsSent     Proposal[] @relation("ProposalsSent")
+  proposalsReceived Proposal[] @relation("ProposalsReceived")
+
   // Family Management
   managedById String?
   managedBy   User?   @relation("Manager", fields: [managedById], references: [id])
@@ -67,6 +71,30 @@ model User {
   identityDocuments IdentityDocument[]
 
   @@map("users")
+}
+
+enum ProposalAnswer {
+  YES
+  NO
+  PENDING
+}
+
+model Proposal {
+  id          String   @id @default(uuid())
+  proposerId  String
+  recipientId String
+  answer      String   @default("PENDING") // YES, NO, PENDING
+  message     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Explicit relation names
+  proposer  User @relation("ProposalsSent", fields: [proposerId], references: [id])
+  recipient User @relation("ProposalsReceived", fields: [recipientId], references: [id])
+
+  @@index([proposerId])
+  @@index([recipientId])
+  @@map("proposals")
 }
 
 // Interest Request System (Step 5) - Canonical source of truth
